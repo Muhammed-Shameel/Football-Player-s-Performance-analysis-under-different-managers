@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommended Managers - Football Tactical Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a6dcc;
+            --secondary-color: #28a745;
+            --accent-color: #ffc107;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --purple: #6f42c1;
+            --teal: #20c997;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+        
+        .dashboard-header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.2)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .dashboard-header .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 700;
+            padding: 18px 25px;
+            font-size: 1.25rem;
+            border-bottom: none;
+            position: relative;
+        }
+        
+        .card-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--teal), var(--purple));
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(26, 109, 204, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 109, 204, 0.6);
+        }
+        
+        .btn-primary:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .manager-card {
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            padding: 20px;
+        }
+        
+        .manager-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .manager-content {
+            text-align: left;
+        }
+        
+        .manager-name-score {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+        
+        .manager-formations {
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .manager-stats {
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.2;
+        }
+        
+        .model-selector {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .model-selector::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal), var(--purple));
+        }
+        
+        .model-selector h5 {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .form-select {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(26, 109, 204, 0.25);
+        }
+        
+        .no-managers {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .no-managers i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-user-friends me-3"></i>Recommended Managers</h1>
+                    <p class="lead">View recommended managers based on tactical analysis</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="model-selector">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Select AI Model</h5>
+                    <p class="text-muted mb-0">Choose the machine learning model for tactical analysis</p>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="modelSelect">
+                        {% for model in models %}
+                        <option value="{{ model }}" {% if loop.first %}selected{% endif %}>{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="yearSelect">
+                        <option value="">All Years</option>
+                        {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user me-2"></i>Player Selection</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label for="playerSelect" class="form-label fw-bold">Select Player</label>
+                            <select class="form-select" id="playerSelect">
+                                <option value="">Choose a player...</option>
+                                {% for player in players %}
+                                <option value="{{ player.Player_ID }}">{{ player.Player_Name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button id="analyzeBtn" class="btn btn-primary w-100" disabled>
+                            <i class="fas fa-chart-line me-2"></i>Get Recommended Managers
+                        </button>
+                        
+                        <div class="loading-spinner" id="loadingSpinner" style="display: none; text-align: center; padding: 20px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 fs-5">Analyzing tactical data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-friends me-2"></i>Recommended Managers</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="managersContainer" class="row">
+                            <div class="col-12 no-managers">
+                                <i class="fas fa-user-friends"></i>
+                                <h4>Select a player to view recommended managers</h4>
+                                <p class="mb-0">Choose a player and click "Get Recommended Managers" to see tactical recommendations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add Tactical Components Comparison Graph here -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Tactical Components Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="tacticChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12 text-center">
+                <a href="/" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <footer class="text-center">
+            <p class="mb-0 fs-5"><i class="fas fa-futbol me-2"></i>Football Tactical Recommendations Dashboard &copy; 2025</p>
+            <p class="mb-0"><small>Powered by Machine Learning and Data Analytics</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // DOM Elements
+        const playerSelect = document.getElementById('playerSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const managersContainer = document.getElementById('managersContainer');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Event Listeners
+        playerSelect.addEventListener('change', function() {
+            const playerId = this.value;
+            analyzeBtn.disabled = !playerId;
+            if (playerId) {
+                updateURL(playerId, modelSelect.value, yearSelect.value);
+            }
+        });
+        
+        modelSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                updateURL(playerSelect.value, this.value, yearSelect.value);
+            }
+        });
+        
+        yearSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                updateURL(playerSelect.value, modelSelect.value, this.value);
+            }
+        });
+        
+        // Function to update URL with parameters
+        function updateURL(playerId, model, year) {
+            const url = new URL(window.location);
+            url.searchParams.set('player_id', playerId);
+            url.searchParams.set('model', model);
+            if (year) {
+                url.searchParams.set('year', year);
+            } else {
+                url.searchParams.delete('year');
+            }
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Auto-load recommendations if a player is pre-selected
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check if there's a selected player from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedPlayerId = urlParams.get('player_id');
+            const year = urlParams.get('year');
+            const model = urlParams.get('model');
+            
+            if (selectedPlayerId) {
+                playerSelect.value = selectedPlayerId;
+            }
+            if (year) {
+                yearSelect.value = year;
+            }
+            if (model) {
+                modelSelect.value = model;
+            }
+            
+            if (selectedPlayerId) {
+                // Enable the analyze button
+                analyzeBtn.disabled = false;
+                // Automatically load managers for this player after a short delay to ensure DOM is ready
+                setTimeout(function() {
+                    // Double check that the player select has the correct value
+                    if (playerSelect.value === selectedPlayerId) {
+                        loadManagersForPlayer(selectedPlayerId, model || modelSelect.value, year || '');
+                    }
+                }, 100);
+            }
+        });
+        
+        analyzeBtn.addEventListener('click', function() {
+            const playerId = playerSelect.value;
+            const modelName = modelSelect.value;
+            const year = yearSelect.value;
+            
+            if (playerId) {
+                loadManagersForPlayer(playerId, modelName, year);
+            }
+        });
+        
+        // Function to load managers for a player
+        function loadManagersForPlayer(playerId, modelName, year) {
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            analyzeBtn.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('player_id', playerId);
+            formData.append('model_name', modelName);
+            if (year) {
+                formData.append('year', year);
+            }
+            
+            fetch('/get_managers_for_player', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    // Check if response is OK
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    displayManagers(data.recommended_managers);
+                    
+                    // If we have recommendations data, update the tactic chart
+                    if (data.recommendations && data.best_component) {
+                        updateTacticChart(data.recommendations, data.best_component);
+                    }
+                })
+                .catch(error => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    
+                    console.error('Error loading managers:', error);
+                    alert('Error loading managers. Please try again.');
+                });
+        }
+        
+        // Function to display managers
+        function displayManagers(managers) {
+            managersContainer.innerHTML = '';
+            
+            // Filter out manager_id = "M21" ("Other") and sort by relevance score (highest first)
+            const filteredManagers = managers
+                .filter(manager => manager.Manager_ID !== "M21")
+                .sort((a, b) => b.relevance_score - a.relevance_score);
+            
+            if (!filteredManagers || filteredManagers.length === 0) {
+                managersContainer.innerHTML = `
+                    <div class="col-12 no-managers">
+                        <i class="fas fa-user-friends"></i>
+                        <h4>No recommended managers found</h4>
+                        <p class="mb-0">No managers match the tactical profile for this player</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display managers in rectangles with manager name + relevance score and formations
+            filteredManagers.forEach(manager => {
+                const managerCol = document.createElement('div');
+                managerCol.className = 'col-md-6 mb-3';
+                // Ensure formations is an array before mapping
+                const formations = Array.isArray(manager.formations) ? manager.formations : [];
+                managerCol.innerHTML = `
+                    <div class="manager-card">
+                        <div class="manager-content">
+                            <div class="manager-name-score fw-bold">${manager.Manager_Name} (${manager.relevance_score.toFixed(3)})</div>
+                            <div class="manager-formations">
+                                ${formations && formations.length > 0 ? 
+                                    formations.map(formation => `• ${formation}`).join('<br>') : 
+                                    'No formations available'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                managersContainer.appendChild(managerCol);
+            });
+        }
+        
+        // Function to update Tactical Components Comparison chart
+        function updateTacticChart(recommendations, bestComponent) {
+            const tacticChartCtx = document.getElementById('tacticChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.tacticChart) {
+                window.tacticChart.destroy();
+            }
+            
+            // Prepare data for chart
+            const labels = recommendations.map(rec => formatTacticComponentName(rec.component));
+            const values = recommendations.map(rec => rec.value);
+            const backgroundColors = recommendations.map(rec => 
+                rec.component === bestComponent.component ? 'rgba(40, 167, 69, 0.7)' : 'rgba(26, 109, 204, 0.7)'
+            );
+            const borderColors = recommendations.map(rec => 
+                rec.component === bestComponent.component ? 'rgba(40, 167, 69, 1)' : 'rgba(26, 109, 204, 1)'
+            );
+            
+            // Create new chart
+            window.tacticChart = new Chart(tacticChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tactical Component Value',
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                },
+                                afterLabel: function(context) {
+                                    const component = recommendations[context.dataIndex].component;
+                                    return getTacticDescription(component);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 13,
+                                    weight: 'bold'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Component Value',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Function to format tactic component names
+        function formatTacticComponentName(component) {
+            if (!component) return '-';
+            return component.replace('Tactic_Component_', 'Tactic ').replace('_', ' ');
+        }
+        
+        // Function to get tactic descriptions
+        function getTacticDescription(component) {
+            const descriptions = {
+                'Tactic_Component_1': 'Defensive stability and compactness - Focus on maintaining defensive shape and organization',
+                'Tactic_Component_2': 'Possession-based play and build-up - Emphasize ball retention and controlled attacking',
+                'Tactic_Component_3': 'Progressive attacking and transitions - Quick transitions from defense to attack with direct play',
+                'Tactic_Component_4': 'High-intensity pressing and aggression - Aggressive pressing to win back possession quickly',
+                'Tactic_Component_5': 'Direct attacking and fast breaks - Direct passes and quick counter-attacks',
+                'Tactic_Component_6': 'Wing play and crossing opportunities - Utilize flanks and deliver crosses into the box',
+                'Tactic_Component_7': 'Technical play and creative passing - Intricate passing patterns and creative solutions'
+            };
+            
+            return descriptions[component] || 'Tactical approach';
+        }
+    </script>
+</body>
+</html>

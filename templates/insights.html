@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights - Football Tactical Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a6dcc;
+            --secondary-color: #28a745;
+            --accent-color: #ffc107;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --purple: #6f42c1;
+            --teal: #20c997;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+        
+        .dashboard-header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.2)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .dashboard-header .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 700;
+            padding: 18px 25px;
+            font-size: 1.25rem;
+            border-bottom: none;
+            position: relative;
+        }
+        
+        .card-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--teal), var(--purple));
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(26, 109, 204, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 109, 204, 0.6);
+        }
+        
+        .btn-primary:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.2;
+        }
+        
+        .placeholder-content {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .placeholder-content i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-chart-line me-3"></i>Insights</h1>
+                    <p class="lead">Advanced tactical analysis and insights</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user me-2"></i>Player Selection</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <select class="form-select" id="playerSelect">
+                                    <option value="">Choose a player...</option>
+                                    {% for player in players %}
+                                    <option value="{{ player.Player_ID }}">{{ player.Player_Name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="modelSelect">
+                                    {% for model in models %}
+                                    <option value="{{ model }}" {% if loop.first %}selected{% endif %}>{{ model }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="yearSelect">
+                                    <option value="">All Years</option>
+                                    {% for year in years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Advanced Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="placeholder-content" id="insightsPlaceholder">
+                            <i class="fas fa-chart-line"></i>
+                            <h4>Select a player to view insights</h4>
+                            <p class="mb-0">Choose a player above to see advanced tactical analysis and insights.</p>
+                        </div>
+                        <div id="insightsContent" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-trophy me-2"></i>Best Tactical Component</h6>
+                                    <p id="bestTacticInfo" class="text-muted">-</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-star me-2"></i>Impact Score</h6>
+                                    <p id="impactScoreInfo" class="text-muted">-</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Performance Summary</h6>
+                                    <p id="performanceSummary" class="text-muted">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Impact Score Over Time Graph here -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line me-2"></i>Impact Score Over Time</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="impactOverTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Manager Comparison Bar Chart -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-tie me-2"></i>Manager Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="managerComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Best Tactic Usage Frequency -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie me-2"></i>Best Tactic Usage Frequency</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="tacticFrequencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Seasonal Performance Trend -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-area me-2"></i>Seasonal Performance Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="seasonalPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Radar Chart by Manager -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-radar-chart me-2"></i>Ability Profile by Manager</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="managerRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Consistency Analysis Graph -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-area me-2"></i>Performance Consistency Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="consistencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12 text-center">
+                <a href="/" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <footer class="text-center">
+            <p class="mb-0 fs-5"><i class="fas fa-futbol me-2"></i>Football Tactical Recommendations Dashboard &copy; 2025</p>
+            <p class="mb-0"><small>Powered by Machine Learning and Data Analytics</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add Chart.js library if not already included
+        // This would typically be included in the head section, but adding here for completeness
+        if (typeof Chart === 'undefined') {
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            document.head.appendChild(script);
+        }
+        
+        // Global variables
+        let impactOverTimeChart = null;
+        let managerComparisonChart = null;
+        let seasonalPerformanceChart = null;
+        let managerRadarChart = null;
+        let tacticFrequencyChart = null;
+        let consistencyChart = null;
+        
+        // DOM Elements
+        const playerSelect = document.getElementById('playerSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const insightsPlaceholder = document.getElementById('insightsPlaceholder');
+        const insightsContent = document.getElementById('insightsContent');
+        const bestTacticInfo = document.getElementById('bestTacticInfo');
+        const impactScoreInfo = document.getElementById('impactScoreInfo');
+        const performanceSummary = document.getElementById('performanceSummary');
+        
+        // Event Listeners
+        playerSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Save player state to localStorage for cross-page persistence
+                savePlayerState(this.value, yearSelect.value, modelSelect.value);
+                
+                loadPlayerInsights(this.value, modelSelect.value, yearSelect.value);
+                updateURL(this.value, modelSelect.value, yearSelect.value);
+            } else {
+                // Clear localStorage when no player selected
+                localStorage.removeItem('playerSelectionState');
+                showPlaceholder();
+            }
+        });
+        
+        modelSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                // Save updated state to localStorage
+                savePlayerState(playerSelect.value, yearSelect.value, this.value);
+                
+                loadPlayerInsights(playerSelect.value, this.value, yearSelect.value);
+                updateURL(playerSelect.value, this.value, yearSelect.value);
+            }
+        });
+        
+        yearSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                // Save updated state to localStorage
+                savePlayerState(playerSelect.value, this.value, modelSelect.value);
+                
+                loadPlayerInsights(playerSelect.value, modelSelect.value, this.value);
+                updateURL(playerSelect.value, modelSelect.value, this.value);
+            }
+        });
+        
+        // Initialize page with URL parameters or localStorage
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let playerId = urlParams.get('player_id');
+            let year = urlParams.get('year');
+            let model = urlParams.get('model');
+            
+            // If no URL params, try localStorage for persistence
+            if (!playerId) {
+                const savedState = localStorage.getItem('playerSelectionState');
+                if (savedState) {
+                    try {
+                        const state = JSON.parse(savedState);
+                        playerId = state.playerId;
+                        year = year || state.year; // URL takes precedence
+                        model = model || state.model;
+                        console.log('Loaded from localStorage:', state);
+                    } catch (e) {
+                        console.warn('Error parsing localStorage:', e);
+                    }
+                }
+            }
+            
+            if (playerId) {
+                playerSelect.value = playerId;
+            }
+            if (year) {
+                yearSelect.value = year;
+            }
+            if (model) {
+                modelSelect.value = model;
+            }
+            
+            if (playerId) {
+                // Save current state to localStorage
+                savePlayerState(playerId, year || '', model || modelSelect.value);
+                loadPlayerInsights(playerId, model || modelSelect.value, year || '');
+            }
+        });
+        
+        // Function to save player state to localStorage
+        function savePlayerState(playerId, year, model) {
+            const state = {
+                playerId: playerId,
+                year: year || '',
+                model: model || 'XGBoost',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('playerSelectionState', JSON.stringify(state));
+            console.log('Saved player state:', state);
+        }
+        
+        // Function to update URL with parameters
+        function updateURL(playerId, model, year) {
+            const url = new URL(window.location);
+            url.searchParams.set('player_id', playerId);
+            url.searchParams.set('model', model);
+            if (year) {
+                url.searchParams.set('year', year);
+            } else {
+                url.searchParams.delete('year');
+            }
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Load player insights
+        function loadPlayerInsights(playerId, modelName, year) {
+            console.log('Loading insights for:', playerId, modelName, year);
+            
+            // Build URL with parameters
+            let url = `/get_insights?player_id=${playerId}`;
+            if (year && year.trim() && year.toLowerCase() !== 'all years') {
+                url += `&year=${year}`;
+            }
+            if (modelName && modelName.trim()) {
+                url += `&model=${modelName}`;
+            }
+            
+            console.log('Loading insights from:', url);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Insights data received:', data);
+                    
+                    if (data.error) {
+                        console.error('Error from insights API:', data.error);
+                        showErrorMessage(data.error);
+                        return;
+                    }
+                    
+                    // Display all charts with real data
+                    updateImpactOverTimeChart(data.impact_over_time || []);
+                    updateManagerComparisonChart(data.manager_comparison || []);
+                    updateSeasonalPerformanceChart(data.seasonal_performance || []);
+                    updateTacticFrequencyChart(data.tactic_frequency || []);
+                    updateManagerRadarChart(data.manager_abilities || []);
+                    updateConsistencyChart(data.seasonal_performance || []);
+                    
+                    // Update advanced insights
+                    updateAdvancedInsights(data);
+                    
+                    hideePlaceholder();
+                })
+                .catch(error => {
+                    console.error('Error loading insights:', error);
+                    showErrorMessage('Failed to load insights: ' + error.message);
+                });
+        }
+        
+        // Update insights content
+        function updateAdvancedInsights(data) {
+            // Get the best performing metrics
+            let bestYear = 'N/A';
+            let bestYearScore = 0;
+            let bestManager = 'N/A';
+            let bestManagerScore = 0;
+            let overallAvgImpact = 0;
+            
+            // Calculate best year from seasonal performance
+            if (data.seasonal_performance && data.seasonal_performance.impact_trend) {
+                const impactTrend = data.seasonal_performance.impact_trend;
+                if (impactTrend.length > 0) {
+                    const bestYearData = impactTrend.reduce((max, current) => 
+                        current.impact_score > max.impact_score ? current : max
+                    );
+                    bestYear = bestYearData.year;
+                    bestYearScore = bestYearData.impact_score;
+                    
+                    // Calculate overall average
+                    overallAvgImpact = impactTrend.reduce((sum, item) => sum + item.impact_score, 0) / impactTrend.length;
+                }
+            }
+            
+            // Calculate best manager from manager comparison
+            if (data.manager_comparison && data.manager_comparison.length > 0) {
+                const bestManagerData = data.manager_comparison.reduce((max, current) => 
+                    current.avg_impact_score > max.avg_impact_score ? current : max
+                );
+                bestManager = bestManagerData.manager_name;
+                bestManagerScore = bestManagerData.avg_impact_score;
+            }
+            
+            // Update impact score info
+            const impactScoreDisplay = overallAvgImpact > 0 ? overallAvgImpact.toFixed(2) : 'N/A';
+            impactScoreInfo.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Overall Average:</strong> ${impactScoreDisplay}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Best Year:</strong> ${bestYear} (${bestYearScore.toFixed(2)})
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Best Manager:</strong> ${bestManager} (${bestManagerScore.toFixed(2)})
+                    </div>
+                </div>
+            `;
+            
+            // Update performance summary with structured format
+            const summaryParts = [];
+            if (bestYear !== 'N/A') {
+                summaryParts.push(`<strong>Best Year:</strong> ${bestYear} (Impact Score: ${bestYearScore.toFixed(2)})`);
+            }
+            if (bestManager !== 'N/A') {
+                summaryParts.push(`<strong>Best Manager:</strong> ${bestManager} (Avg Impact: ${bestManagerScore.toFixed(2)})`);
+            }
+            if (overallAvgImpact > 0) {
+                summaryParts.push(`<strong>Overall Average Impact:</strong> ${overallAvgImpact.toFixed(2)}`);
+            }
+            
+            if (summaryParts.length > 0) {
+                performanceSummary.innerHTML = summaryParts.join('<br>');
+            } else {
+                performanceSummary.textContent = 'No performance data available for analysis.';
+            }
+            
+            // Update best tactic info from the most recent data
+            if (data.seasonal_performance && data.seasonal_performance.abilities_trend) {
+                const abilitiesTrend = data.seasonal_performance.abilities_trend;
+                if (abilitiesTrend.length > 0) {
+                    // Find the ability with highest recent performance
+                    let bestAbility = 'N/A';
+                    let bestAbilityScore = 0;
+                    
+                    abilitiesTrend.forEach(ability => {
+                        if (ability.data && ability.data.length > 0) {
+                            const latestScore = ability.data[ability.data.length - 1].value;
+                            if (latestScore > bestAbilityScore) {
+                                bestAbility = ability.ability;
+                                bestAbilityScore = latestScore;
+                            }
+                        }
+                    });
+                    
+                    bestTacticInfo.textContent = `Strongest Ability: ${bestAbility} (Score: ${bestAbilityScore.toFixed(2)})`;
+                } else {
+                    bestTacticInfo.textContent = 'No tactical component data available';
+                }
+            } else {
+                bestTacticInfo.textContent = 'No tactical component data available';
+            }
+        }
+        
+        // Show placeholder
+        function showPlaceholder() {
+            insightsPlaceholder.style.display = 'block';
+            insightsContent.style.display = 'none';
+        }
+        
+        // Hide placeholder
+        function hideePlaceholder() {
+            insightsPlaceholder.style.display = 'none';
+            insightsContent.style.display = 'block';
+        }
+        
+        // Helper function
+        function formatTacticComponentName(component) {
+            if (!component) return '-';
+            return component.replace('Tactic_Component_', 'Tactic ').replace('_', ' ');
+        }
+        
+        // Function to update Impact Score Over Time chart with manager periods
+        function updateImpactOverTimeChart(impactData, managerPeriods) {
+            const impactOverTimeChartCtx = document.getElementById('impactOverTimeChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (impactOverTimeChart) {
+                impactOverTimeChart.destroy();
+            }
+            
+            if (!impactData || impactData.length === 0) {
+                // Create a placeholder chart
+                impactOverTimeChart = new Chart(impactOverTimeChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Impact Score Over Time',
+                            data: [],
+                            borderColor: 'rgba(26, 109, 204, 1)',
+                            backgroundColor: 'rgba(26, 109, 204, 0.2)',
+                            borderWidth: 3,
+                            pointBackgroundColor: 'rgba(26, 109, 204, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(26, 109, 204, 1)',
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Impact Score',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Date',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+                return;
+            }
+            
+            // Sort data by date chronologically
+            impactData.sort((a, b) => {
+                const parseDate = (dateStr) => {
+                    const parts = dateStr.split(' ');
+                    const month = parts[0];
+                    const year = parseInt(parts[1]);
+                    const months = {
+                        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                    };
+                    return new Date(year, months[month], 1);
+                };
+                return parseDate(a.date) - parseDate(b.date);
+            });
+            
+            // Create datasets for each manager period
+            const datasets = [];
+            
+            if (managerPeriods && managerPeriods.length > 0) {
+                // Group data by manager periods
+                managerPeriods.forEach((period, index) => {
+                    const periodData = impactData.filter(item => {
+                        const itemYear = parseInt(item.date.split(' ')[1]);
+                        return itemYear >= period.start_year && itemYear <= period.end_year;
+                    });
+                    
+                    if (periodData.length > 0) {
+                        datasets.push({
+                            label: `${period.manager_name} (${period.start_year})`,
+                            data: periodData.map(item => ({ x: item.date, y: item.impact_score })),
+                            borderColor: period.color,
+                            backgroundColor: period.color + '40',
+                            borderWidth: 3,
+                            pointBackgroundColor: period.color,
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: period.color,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            fill: false,
+                            tension: 0.4
+                        });
+                    }
+                });
+            } else {
+                // Single dataset if no manager periods
+                datasets.push({
+                    label: 'Impact Score Over Time',
+                    data: impactData.map(item => ({ x: item.date, y: item.impact_score })),
+                    borderColor: 'rgba(26, 109, 204, 1)',
+                    backgroundColor: 'rgba(26, 109, 204, 0.2)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(26, 109, 204, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(26, 109, 204, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.4
+                });
+            }
+            
+            // Create new chart
+            impactOverTimeChart = new Chart(impactOverTimeChartCtx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    return `Date: ${context[0].parsed.x}`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                                },
+                                afterBody: function(context) {
+                                    const datasetLabel = context[0].dataset.label;
+                                    if (datasetLabel.includes('(')) {
+                                        const managerName = datasetLabel.split(' (')[0];
+                                        const year = datasetLabel.split('(')[1].split(')')[0];
+                                        return [`Manager: ${managerName}`, `Period: ${year}`];
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Impact Score',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            type: 'category',
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Function to update Manager Comparison chart
+        function updateManagerComparisonChart(managerData) {
+            const ctx = document.getElementById('managerComparisonChart').getContext('2d');
+            
+            if (managerComparisonChart) {
+                managerComparisonChart.destroy();
+            }
+            
+            const labels = managerData.map(item => item.manager_name);
+            const values = managerData.map(item => item.avg_impact_score);
+            const colors = managerData.map(item => item.color);
+            
+            managerComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Impact Score',
+                        data: values,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Impact Score'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to update Tactic Frequency chart
+        function updateTacticFrequencyChart(tacticData) {
+            const ctx = document.getElementById('tacticFrequencyChart').getContext('2d');
+            
+            if (tacticFrequencyChart) {
+                tacticFrequencyChart.destroy();
+            }
+            
+            const labels = tacticData.map(item => item.tactic);
+            const values = tacticData.map(item => item.percentage);
+            const colors = tacticData.map(item => item.color);
+            
+            tacticFrequencyChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to update Seasonal Performance chart
+        function updateSeasonalPerformanceChart(seasonalData) {
+            const ctx = document.getElementById('seasonalPerformanceChart').getContext('2d');
+            
+            if (seasonalPerformanceChart) {
+                seasonalPerformanceChart.destroy();
+            }
+            
+            if (!seasonalData || (!seasonalData.impact_trend && !seasonalData.abilities_trend)) {
+                // Show "No data" message
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#6c757d';
+                ctx.fillText('No seasonal performance data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+            
+            const datasets = [];
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+            
+            // Add impact score trend
+            if (seasonalData.impact_trend && seasonalData.impact_trend.length > 0) {
+                const years = seasonalData.impact_trend.map(item => item.year);
+                const impactScores = seasonalData.impact_trend.map(item => item.impact_score);
+                
+                datasets.push({
+                    label: 'Impact Score',
+                    data: impactScores,
+                    borderColor: '#FF6384',
+                    backgroundColor: '#FF638440',
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                });
+            }
+            
+            // Add ability trends (use all 5 abilities including Defense)
+            if (seasonalData.abilities_trend && seasonalData.abilities_trend.length > 0) {
+                seasonalData.abilities_trend.forEach((abilityTrend, index) => {
+                    if (abilityTrend.data && abilityTrend.data.length > 0) {
+                        const values = abilityTrend.data.map(item => item.value);
+                        
+                        datasets.push({
+                            label: abilityTrend.ability,
+                            data: values,
+                            borderColor: colors[(index + 1) % colors.length],
+                            backgroundColor: colors[(index + 1) % colors.length] + '40',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        });
+                    }
+                });
+            }
+            
+            const years = seasonalData.years || [];
+            
+            seasonalPerformanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ability Score'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Impact Score'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to update Manager Radar chart with ability profiles
+        function updateManagerRadarChart(managerAbilities) {
+            const ctx = document.getElementById('managerRadarChart').getContext('2d');
+            
+            if (managerRadarChart) {
+                managerRadarChart.destroy();
+            }
+            
+            if (!managerAbilities || managerAbilities.length === 0) {
+                // Show "No data" message in a styled way
+                const chartContainer = ctx.canvas.parentElement;
+                chartContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Manager Ability Data</h5>
+                        <p class="text-muted">No ability profile data available for managers</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create a grouped bar chart instead of overlapping radar for better readability
+            const abilities = ['Passing', 'Shooting', 'Creativity', 'Dribbling', 'Defense'];
+            const topManagers = managerAbilities.slice(0, 3); // Limit to top 3 for clarity
+            
+            // Prepare data for grouped bar chart
+            const datasets = topManagers.map((manager, index) => {
+                const values = abilities.map(ability => manager.abilities[ability] || 0);
+                const colors = ['#FF6384', '#36A2EB', '#FFCE56'];
+                
+                return {
+                    label: `${manager.manager_name} (${manager.games_managed} games, Impact: ${manager.avg_impact_score})`,
+                    data: values,
+                    backgroundColor: colors[index] + '80', // Add transparency
+                    borderColor: colors[index],
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    borderSkipped: false
+                };
+            });
+            
+            managerRadarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: abilities,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 11
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    const managerInfo = topManagers[context.datasetIndex];
+                                    return [
+                                        `${context.dataset.label.split(' (')[0]}: ${context.parsed.y.toFixed(2)}`,
+                                        `Games Managed: ${managerInfo.games_managed}`,
+                                        `Avg Impact Score: ${managerInfo.avg_impact_score}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Ability Score',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        // Function to update Consistency Chart - Performance stability analysis
+        function updateConsistencyChart(seasonalData) {
+            const ctx = document.getElementById('consistencyChart').getContext('2d');
+            
+            if (consistencyChart) {
+                consistencyChart.destroy();
+            }
+            
+            if (!seasonalData || !seasonalData.impact_trend || seasonalData.impact_trend.length === 0) {
+                // Show "No data" message
+                const chartContainer = ctx.canvas.parentElement;
+                chartContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Consistency Data</h5>
+                        <p class="text-muted">Not enough seasonal data to analyze consistency</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const impactTrend = seasonalData.impact_trend;
+            
+            // Calculate rolling standard deviation for consistency analysis
+            const consistencyData = [];
+            const windowSize = 3; // 3-year rolling window
+            
+            for (let i = windowSize - 1; i < impactTrend.length; i++) {
+                const window = impactTrend.slice(i - windowSize + 1, i + 1);
+                const scores = window.map(w => w.impact_score);
+                const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
+                const stdDev = Math.sqrt(variance);
+                
+                consistencyData.push({
+                    year: window[window.length - 1].year,
+                    mean: mean,
+                    consistency: Math.max(0, 10 - stdDev * 2), // Inverse consistency score (higher = more consistent)
+                    stdDev: stdDev,
+                    upperBound: mean + stdDev,
+                    lowerBound: Math.max(0, mean - stdDev)
+                });
+            }
+            
+            if (consistencyData.length === 0) {
+                const chartContainer = ctx.canvas.parentElement;
+                chartContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Insufficient Data</h5>
+                        <p class="text-muted">Need at least 3 years of data for consistency analysis</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const years = consistencyData.map(d => d.year);
+            const consistencyScores = consistencyData.map(d => d.consistency);
+            const meanScores = consistencyData.map(d => d.mean);
+            const upperBounds = consistencyData.map(d => d.upperBound);
+            const lowerBounds = consistencyData.map(d => d.lowerBound);
+            
+            consistencyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [
+                        {
+                            label: 'Average Impact Score',
+                            data: meanScores,
+                            borderColor: '#36A2EB',
+                            backgroundColor: '#36A2EB40',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Upper Consistency Bound',
+                            data: upperBounds,
+                            borderColor: '#4BC0C040',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            fill: '+1',
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Lower Consistency Bound',
+                            data: lowerBounds,
+                            borderColor: '#4BC0C040',
+                            backgroundColor: '#4BC0C020',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Consistency Score (0-10)',
+                            data: consistencyScores,
+                            borderColor: '#FF6384',
+                            backgroundColor: '#FF638440',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 11
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    return `Year: ${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const data = consistencyData[dataIndex];
+                                    
+                                    if (context.datasetIndex === 0) {
+                                        return `Average Impact: ${context.parsed.y.toFixed(2)}`;
+                                    } else if (context.datasetIndex === 3) {
+                                        return [
+                                            `Consistency Score: ${context.parsed.y.toFixed(1)}/10`,
+                                            `Standard Deviation: ${data.stdDev.toFixed(2)}`,
+                                            `${data.stdDev < 0.5 ? 'Very Consistent' : data.stdDev < 1.0 ? 'Consistent' : data.stdDev < 1.5 ? 'Moderately Consistent' : 'Inconsistent'}`
+                                        ];
+                                    } else {
+                                        return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Impact Score',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            max: 10,
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Consistency Score (0-10)',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Year (3-Year Rolling Window)',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        function showErrorMessage(message) {
+            const mainContent = document.querySelector('.insights-content');
+            mainContent.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Error:</strong> ${message}
+                </div>
+                <div class="placeholder-content">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Unable to Load Insights</h3>
+                    <p>There was an error loading the insights data. Please try again.</p>
+                    <a href="/" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-left me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            `;
+        }
+        
+        // Initialize page from URL parameters
+        function initializeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('player_id');
+            const year = urlParams.get('year');
+            const model = urlParams.get('model');
+            
+            console.log('Initializing insights page with:', { playerId, year, model });
+            
+            if (playerId) {
+                // Update page title with player info
+                updatePageTitle(playerId);
+                
+                // Load insights data
+                loadInsightsData(playerId, year, model);
+            } else {
+                showNoPlayerMessage();
+            }
+        }
+        
+        function updatePageTitle(playerId) {
+            // Fetch player info to update the title
+            fetch(`/get_player_info?player_id=${playerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.player_name) {
+                        document.querySelector('.dashboard-header h1').innerHTML = 
+                            `<i class="fas fa-chart-line me-3"></i>Player Insights - ${data.player_name}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading player info:', error);
+                });
+        }
+        
+        function loadInsightsData(playerId, year, model) {
+            // Show loading state
+            showLoadingState();
+            
+            // Build URL with parameters
+            let url = `/get_insights?player_id=${playerId}`;
+            if (year && year.trim()) {
+                url += `&year=${year}`;
+            }
+            if (model && model.trim()) {
+                url += `&model=${model}`;
+            }
+            
+            console.log('Loading insights from:', url);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Insights data:', data);
+                    
+                    if (data.error) {
+                        showErrorMessage(data.error);
+                        return;
+                    }
+                    
+                    // Hide loading state
+                    hideLoadingState();
+                    
+                    // Display all charts with real data
+                    displayImpactOverTime(data.impact_over_time || []);
+                    displayManagerComparison(data.manager_comparison || []);
+                    updateSeasonalPerformanceChart(data.seasonal_performance || []);
+                    displayTacticFrequency(data.tactic_frequency || []);
+                    updateConsistencyChart(data.seasonal_performance || []);
+                })
+                .catch(error => {
+                    console.error('Error loading insights:', error);
+                    hideLoadingState();
+                    showErrorMessage('Error loading insights: ' + error.message);
+                });
+        }
+        
+        function showNoPlayerMessage() {
+            document.querySelector('.insights-content').innerHTML = `
+                <div class="placeholder-content">
+                    <i class="fas fa-user-times"></i>
+                    <h3>No Player Selected</h3>
+                    <p>Please select a player from the main dashboard to view insights.</p>
+                    <a href="/" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-left me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            `;
+        }
+        
+        function showLoadingState() {
+            const cards = document.querySelectorAll('.chart-card');
+            cards.forEach(card => {
+                const cardBody = card.querySelector('.card-body');
+                cardBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading chart data...</p>
+                    </div>
+                `;
+            });
+        }
+        
+        function hideLoadingState() {
+            // This will be handled by individual chart display functions
+        }
+
+        // Initialize page when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFromURL();
+        });
+    </script>
+</body>
+</html>

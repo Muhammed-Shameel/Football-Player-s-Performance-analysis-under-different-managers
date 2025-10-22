@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Components - Football Tactical Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a6dcc;
+            --secondary-color: #28a745;
+            --accent-color: #ffc107;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --purple: #6f42c1;
+            --teal: #20c997;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+        
+        .dashboard-header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.2)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .dashboard-header .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 700;
+            padding: 18px 25px;
+            font-size: 1.25rem;
+            border-bottom: none;
+            position: relative;
+        }
+        
+        .card-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--teal), var(--purple));
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(26, 109, 204, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 109, 204, 0.6);
+        }
+        
+        .btn-primary:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.2;
+        }
+        
+        .model-selector {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .model-selector::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal), var(--purple));
+        }
+        
+        .model-selector h5 {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .form-select {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(26, 109, 204, 0.25);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .component-card {
+            background: linear-gradient(135deg, rgba(26, 109, 204, 0.1), rgba(26, 109, 204, 0.2));
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .component-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .component-card.best {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(40, 167, 69, 0.25));
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        }
+        
+        .component-card h6 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .component-card.best h6 {
+            color: var(--secondary-color);
+        }
+        
+        .tactic-value {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .best-badge {
+            background: linear-gradient(to right, var(--secondary-color), #34ce57);
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .recommendation-table th {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .best-tactic {
+            border: 4px solid var(--secondary-color);
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.2)) !important;
+            box-shadow: 0 0 25px rgba(40, 167, 69, 0.4);
+        }
+        
+        .placeholder-content {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .placeholder-content i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        /* Tactical Details Styles */
+        .tactic-details {
+            background: rgba(40, 167, 69, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #28a745;
+        }
+        
+        .tactic-details h5 {
+            color: #28a745;
+            font-weight: 700;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .descriptors-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .descriptor-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            display: inline-block;
+            margin-right: 8px;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .descriptor-item:hover {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: #28a745;
+            transform: translateY(-2px);
+        }
+        
+        /* Variable Loadings Styles */
+        .variable-loadings-accordion .accordion-item {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .variable-loadings-accordion .accordion-header {
+            background: rgba(26, 109, 204, 0.05);
+        }
+        
+        .variable-loadings-accordion .accordion-button {
+            background: rgba(26, 109, 204, 0.1);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 15px 20px;
+        }
+        
+        .variable-loadings-accordion .accordion-button:not(.collapsed) {
+            background: rgba(26, 109, 204, 0.15);
+            color: var(--primary-color);
+            border-color: transparent;
+            box-shadow: none;
+        }
+        
+        .variable-loadings-accordion .accordion-button:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(26, 109, 204, 0.25);
+        }
+        
+        .variable-loadings-accordion .accordion-body {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .variable-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.2s ease;
+        }
+        
+        .variable-item:hover {
+            background: rgba(26, 109, 204, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .variable-name {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        .variable-loading {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        .loading-strength {
+            font-size: 0.85rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        .loading-very-high { background: #28a745; color: white; }
+        .loading-high { background: #17a2b8; color: white; }
+        .loading-medium { background: #ffc107; color: #333; }
+        .loading-low { background: #dc3545; color: white; }
+        
+        /* Animation for best value pulse */
+        .animation-pulse {
+            animation: pulse 2s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-chart-bar me-3"></i>Tactical Components Comparison</h1>
+                    <p class="lead">Detailed analysis of tactical components and player performance</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="model-selector">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Player</h5>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="playerSelect">
+                        <option value="">Choose a player...</option>
+                        {% for player in players %}
+                        <option value="{{ player.Player_ID }}">{{ player.Player_Name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="modelSelect">
+                        {% for model in models %}
+                        <option value="{{ model }}" {% if loop.first %}selected{% endif %}>{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="yearSelect">
+                        <option value="">All Years</option>
+                        {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- First: Best Tactical Component -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-trophy me-2"></i>Best Tactical Component</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div id="bestComponentPlaceholder" class="placeholder-content">
+                            <i class="fas fa-trophy"></i>
+                            <h4>Select a player to view best tactical component</h4>
+                            <p class="mb-0">Choose a player above to see their strongest tactical component.</p>
+                        </div>
+                        <div id="bestComponentContent" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h2 id="bestTacticComponentName" class="fw-bold text-success mb-3">-</h2>
+                                    <div class="display-3 fw-bold mb-3" id="bestTacticComponentValue">-</div>
+                                    <div class="formation-display">
+                                        <h5><i class="fas fa-chess-board me-2"></i>Recommended Formation</h5>
+                                        <h3 id="bestTacticFormation" class="fw-bold mb-3">-</h3>
+                                    </div>
+                                    <div class="tactic-description">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Tactical Insight</h5>
+                                        <p id="bestTacticDescription" class="mb-0">-</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="tactic-details">
+                                        <h5><i class="fas fa-list me-2"></i>Key Features</h5>
+                                        <div id="tacticDescriptors" class="descriptors-list">
+                                            <p class="text-muted">Loading tactical features...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Second: Best Manager Recommendation -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-tie me-2"></i>Best Manager Recommendation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="managerPlaceholder" class="placeholder-content">
+                            <i class="fas fa-user-tie"></i>
+                            <h4>Manager recommendation will appear here</h4>
+                            <p class="mb-0">Based on the best tactical component analysis.</p>
+                        </div>
+                        <div id="managerRecommendationContent" style="display: none;">
+                            <div class="row" id="bestManagerContainer">
+                                <div class="col-12 text-center">
+                                    <p class="text-muted">Loading manager recommendation...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Third: Tactical Components Comparison -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Tactical Components Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="chartPlaceholder" class="placeholder-content">
+                            <i class="fas fa-chart-bar"></i>
+                            <h4>Tactical components chart will appear here</h4>
+                            <p class="mb-0">Visual comparison of all tactical components.</p>
+                        </div>
+                        <div class="chart-container" id="chartContainer" style="display: none;">
+                            <canvas id="tacticChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Fourth: Detailed Tactical Analysis -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-table me-2"></i>Detailed Tactical Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="detailsPlaceholder" class="placeholder-content">
+                            <i class="fas fa-table"></i>
+                            <h4>Tactical components details will appear here</h4>
+                            <p class="mb-0">Detailed breakdown of each tactical component and its impact.</p>
+                        </div>
+                        <div id="componentsContainer">
+                            <!-- Components will be populated here -->
+                        </div>
+                        
+                        <!-- Add Variable Loadings Section -->
+                        <div id="variableLoadingsSection" style="display: none;">
+                            <h6 class="mt-4 mb-3"><i class="fas fa-cogs me-2"></i>Variable Loadings by Component</h6>
+                            <div class="accordion" id="tacticalComponentsAccordion">
+                                <!-- Accordion items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12 text-center">
+                <a href="/" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <footer class="text-center">
+            <p class="mb-0 fs-5"><i class="fas fa-futbol me-2"></i>Football Tactical Recommendations Dashboard &copy; 2025</p>
+            <p class="mb-0"><small>Powered by Machine Learning and Data Analytics</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let tacticChart = null;
+        
+        // DOM Elements
+        const playerSelect = document.getElementById('playerSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const placeholder = document.getElementById('placeholder');
+        const chartContainer = document.getElementById('chartContainer');
+        const componentsContainer = document.getElementById('componentsContainer');
+        
+        // Event Listeners
+        playerSelect.addEventListener('change', function() {
+            console.log('Player selection changed to:', this.value);
+            if (this.value) {
+                // First update year dropdown for this player
+                updateYearDropdown(this.value);
+                // Save player state to localStorage
+                savePlayerState(this.value, yearSelect.value, modelSelect.value);
+                loadTacticalComponents(this.value, modelSelect.value, yearSelect.value);
+                updateURL(this.value, modelSelect.value, yearSelect.value);
+            } else {
+                // Clear localStorage when no player selected
+                localStorage.removeItem('playerSelectionState');
+                showPlaceholder();
+            }
+        });
+        
+        modelSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                // Save updated state to localStorage
+                savePlayerState(playerSelect.value, yearSelect.value, this.value);
+                loadTacticalComponents(playerSelect.value, this.value, yearSelect.value);
+                updateURL(playerSelect.value, this.value, yearSelect.value);
+            }
+        });
+        
+        yearSelect.addEventListener('change', function() {
+            if (playerSelect.value) {
+                // Save updated state to localStorage
+                savePlayerState(playerSelect.value, this.value, modelSelect.value);
+                loadTacticalComponents(playerSelect.value, modelSelect.value, this.value);
+                updateURL(playerSelect.value, modelSelect.value, this.value);
+            }
+        });
+        
+        // Initialize page with URL parameters
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing tactical components page');
+            try {
+                initializeFromURL();
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                // Show placeholder content if initialization fails
+                showPlaceholder();
+            }
+        });
+        
+        // Initialize from URL parameters or localStorage
+        function initializeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let playerId = urlParams.get('player_id');
+            let year = urlParams.get('year');
+            let model = urlParams.get('model');
+            
+            // If no URL params, try localStorage for persistence
+            if (!playerId) {
+                const savedState = localStorage.getItem('playerSelectionState');
+                if (savedState) {
+                    try {
+                        const state = JSON.parse(savedState);
+                        playerId = state.playerId;
+                        year = year || state.year; // URL takes precedence
+                        model = model || state.model;
+                        console.log('Loaded from localStorage:', state);
+                    } catch (e) {
+                        console.warn('Error parsing localStorage:', e);
+                    }
+                }
+            }
+            
+            console.log('Initializing tactical components page with:', { playerId, year, model });
+            
+            if (playerId) {
+                playerSelect.value = playerId;
+                
+                // Update year dropdown for this player
+                updateYearDropdown(playerId).then(() => {
+                    // Set year and model selections after dropdown is updated
+                    if (year && document.querySelector(`#yearSelect option[value="${year}"]`)) {
+                        yearSelect.value = year;
+                    }
+                    
+                    if (model && document.querySelector(`#modelSelect option[value="${model}"]`)) {
+                        modelSelect.value = model;
+                    }
+                    
+                    // Save current state to localStorage
+                    savePlayerState(playerId, yearSelect.value, modelSelect.value);
+                    
+                    // Load tactical components with current selections
+                    loadTacticalComponents(playerId, modelSelect.value, yearSelect.value);
+                }).catch(error => {
+                    console.error('Error updating year dropdown:', error);
+                    // Still load tactical components even if year dropdown fails
+                    loadTacticalComponents(playerId, modelSelect.value, yearSelect.value);
+                });
+            }
+        }
+        
+        // Update year dropdown based on player selection
+        function updateYearDropdown(playerId) {
+            return fetch(`/get_player_info?player_id=${playerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error fetching player info:', data.error);
+                        return;
+                    }
+                    
+                    const currentYear = yearSelect.value;
+                    yearSelect.innerHTML = '<option value="">All Years</option>';
+                    
+                    if (data.available_years && data.available_years.length > 0) {
+                        data.available_years.forEach(year => {
+                            const option = document.createElement('option');
+                            option.value = year;
+                            option.textContent = year;
+                            yearSelect.appendChild(option);
+                        });
+                        
+                        // Restore previous selection if it's still valid
+                        if (currentYear && data.available_years.includes(parseInt(currentYear))) {
+                            yearSelect.value = currentYear;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating year dropdown:', error);
+                });
+        }
+        
+        // Function to save player state to localStorage
+        function savePlayerState(playerId, year, model) {
+            const state = {
+                playerId: playerId,
+                year: year || '',
+                model: model || 'XGBoost',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('playerSelectionState', JSON.stringify(state));
+            console.log('Saved player state:', state);
+        }
+        
+        // Function to update URL with parameters
+        function updateURL(playerId, model, year) {
+            const url = new URL(window.location);
+            url.searchParams.set('player_id', playerId);
+            url.searchParams.set('model', model);
+            if (year) {
+                url.searchParams.set('year', year);
+            } else {
+                url.searchParams.delete('year');
+            }
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Display tactical components using EXACT SAME data from main dashboard
+        function displayTacticalComponentsFromMainDashboard(data) {
+            console.log('Displaying tactical components from main dashboard data:', data);
+            
+            // Validate data
+            if (!data) {
+                console.error('No data received for tactical components display');
+                showErrorMessage('No data received for tactical components display');
+                return;
+            }
+            
+            try {
+                // Use EXACT SAME logic as main dashboard displayRecommendations function
+                let bestTacticData = null;
+                
+                // Handle best tactic display using SAME logic as main dashboard
+                const bestTactics = data.best_tactics || [];
+                console.log('Best tactics array:', bestTactics);
+                if (bestTactics.length > 0) {
+                    const bestTactic = bestTactics[0];
+                    bestTacticData = {
+                        name: formatTacticComponentName(bestTactic.component) || 'Unknown',
+                        component: bestTactic.component,
+                        value: bestTactic.value || 0,
+                        formation: bestTactic.formation || getFormationForComponent(bestTactic.component),
+                        description: bestTactic.description || getTacticDescription(bestTactic.component),
+                        descriptors: getTacticDescriptors(bestTactic.component)
+                    };
+                    console.log('Using bestTactics array, best tactic:', bestTacticData);
+                } else {
+                    // Fallback to legacy format - SAME as main dashboard
+                    const bestTactic = data.best_tactic || data.best_component?.component || 'Unknown';
+                    const tacticValue = data.tactic_value || data.best_component?.value || 0;
+                    
+                    bestTacticData = {
+                        name: formatTacticComponentName(bestTactic),
+                        component: bestTactic,
+                        value: tacticValue,
+                        formation: getFormationForComponent(bestTactic),
+                        description: getTacticDescription(bestTactic),
+                        descriptors: getTacticDescriptors(bestTactic)
+                    };
+                    console.log('Using legacy format, best tactic:', bestTacticData);
+                }
+                
+                // Update best component display using SAME logic
+                console.log('Calling updateBestComponent with:', bestTacticData);
+                updateBestComponent(bestTacticData);
+                
+                // Display managers using existing data (if available)
+                const managers = data.best_managers || data.recommended_managers || [];
+                console.log('Displaying managers:', managers);
+                displayTopManagers(managers.slice(0, 5));
+                
+                // Update chart and components table using recommendations data
+                const components = data.recommendations || [];
+                console.log('Displaying components:', components);
+                if (components.length > 0) {
+                    updateTacticChart(components, bestTacticData);
+                    updateComponentsTable(components, bestTacticData);
+                    loadVariableLoadingsAccordion(components);
+                } else {
+                    showNoChartData();
+                    showNoTableData();
+                }
+                
+                // Hide all placeholders and show content
+                console.log('Hiding placeholders');
+                hidePlaceholders();
+                
+                console.log('Successfully displayed tactical components from main dashboard data');
+            } catch (error) {
+                console.error('Error in displayTacticalComponentsFromMainDashboard:', error);
+                showErrorMessage('Error displaying tactical components: ' + error.message);
+            }
+        }
+        
+        // Helper functions (same as main dashboard)
+        function getFormationForComponent(component) {
+            const formations = {
+                'Tactic_Component_1': '4-2-3-1 Defensive',
+                'Tactic_Component_2': '4-3-3 Possession', 
+                'Tactic_Component_3': '3-5-2 Attacking',
+                'Tactic_Component_4': '4-4-2 High Press',
+                'Tactic_Component_5': '4-2-2-2 Counter',
+                'Tactic_Component_6': '3-4-3 Wide Play',
+                'Tactic_Component_7': '4-1-4-1 Technical'
+            };
+            return formations[component] || 'Formation N/A';
+        }
+        
+        function getTacticDescription(component) {
+            const descriptions = {
+                'Tactic_Component_1': 'Defensive stability and compactness - Focus on maintaining defensive shape',
+                'Tactic_Component_2': 'Possession-based play and build-up - Emphasize ball retention and controlled attacking',
+                'Tactic_Component_3': 'Progressive attacking and transitions - Quick transitions from defense to attack',
+                'Tactic_Component_4': 'High-intensity pressing and aggression - Aggressive pressing to win back possession',
+                'Tactic_Component_5': 'Direct attacking and fast breaks - Direct passes and quick counter-attacks',
+                'Tactic_Component_6': 'Wing play and crossing opportunities - Utilize flanks and deliver crosses',
+                'Tactic_Component_7': 'Technical play and creative passing - Intricate passing patterns and creative solutions'
+            };
+            return descriptions[component] || 'Tactical approach';
+        }
+        
+        function formatTacticComponentName(component) {
+            if (!component) {
+                return 'Unknown Component';
+            }
+            // Remove prefix and format
+            const name = component.replace('Tactic_Component_', 'Tactical Component ');
+            return name;
+        }
+        
+        function getTacticDescriptors(component) {
+            // Return sample descriptors for the component
+            const descriptors = {
+                'Tactic_Component_1': ['Low defensive line', 'Compact midfield', 'Counter-attacking style', 'Strong aerial presence'],
+                'Tactic_Component_2': ['Short passing', 'Build-up play', 'Patient possession', 'Technical ability'],
+                'Tactic_Component_3': ['Quick transitions', 'Attacking runs', 'Progressive passing', 'Forward momentum'],
+                'Tactic_Component_4': ['High pressing', 'Aggressive tackling', 'Quick recovery', 'Intensity'],
+                'Tactic_Component_5': ['Direct passes', 'Fast breaks', 'Clinical finishing', 'Pace'],
+                'Tactic_Component_6': ['Wide play', 'Crossing ability', 'Flanks utilization', 'Wing dominance'],
+                'Tactic_Component_7': ['Technical skills', 'Creative passing', 'Vision', 'Tactical intelligence']
+            };
+            return descriptors[component] || [];
+        }
+        
+        // Load tactical components for player - using EXACT SAME logic as main dashboard
+        function loadTacticalComponents(playerId, modelName, year) {
+            console.log('Loading tactical components for:', { playerId, modelName, year });
+            
+            // Validate inputs
+            if (!playerId) {
+                console.warn('No player ID provided for tactical components loading');
+                showErrorMessage('Please select a player to view tactical components.');
+                return;
+            }
+            
+            // Show loading state
+            try {
+                showLoadingState();
+            } catch (error) {
+                console.error('Error showing loading state:', error);
+            }
+            
+            // Use the EXACT SAME endpoint and method as main dashboard
+            const formData = new FormData();
+            formData.append('player_id', playerId);
+            formData.append('model_name', modelName || 'XGBoost'); // Default to XGBoost if not provided
+            if (year && year.trim() && year.toLowerCase() !== 'all years') {
+                formData.append('year', year);
+            }
+            
+            console.log('Calling SAME API as main dashboard: /get_recommendations with formData:', {
+                playerId: playerId,
+                modelName: modelName || 'XGBoost',
+                year: year
+            });
+            
+            // Use the EXACT SAME API call as main dashboard
+            fetch('/get_recommendations', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    console.log('Response received:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data from main dashboard API:', data);
+                    
+                    if (data.error) {
+                        console.error('Error from main dashboard API:', data.error);
+                        showErrorMessage('Error loading tactical components: ' + data.error);
+                        try {
+                            hideLoadingState();
+                        } catch (error) {
+                            console.error('Error hiding loading state:', error);
+                        }
+                        return;
+                    }
+                    
+                    // Use the SAME display logic as main dashboard
+                    try {
+                        displayTacticalComponentsFromMainDashboard(data);
+                    } catch (error) {
+                        console.error('Error displaying tactical components:', error);
+                        showErrorMessage('Error displaying tactical components: ' + error.message);
+                    }
+                    
+                    try {
+                        hideLoadingState();
+                    } catch (error) {
+                        console.error('Error hiding loading state:', error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading tactical components:', error);
+                    showErrorMessage('Failed to load tactical components: ' + error.message + '. Please try again.');
+                    try {
+                        hideLoadingState();
+                    } catch (error) {
+                        console.error('Error hiding loading state:', error);
+                    }
+                });
+        }
+        
+        // Display tactical components data - SIMPLIFIED to match main dashboard
+        function displayTacticalComponents(data) {
+            console.log('Legacy function - redirecting to main dashboard display');
+            // This function is now replaced by displayTacticalComponentsFromMainDashboard
+            displayTacticalComponentsFromMainDashboard(data);
+        }
+        
+        // Show no chart data message
+        function showNoChartData() {
+            try {
+                console.log('Showing no chart data message');
+                const chartContainer = document.getElementById('chartContainer');
+                console.log('Chart container found:', !!chartContainer);
+                if (chartContainer) {
+                    chartContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Tactical Data Available</h5>
+                            <p class="text-muted">No tactical components data found for this player</p>
+                        </div>
+                    `;
+                    console.log('Updated chart container with no data message');
+                }
+            } catch (error) {
+                console.error('Error showing no chart data:', error);
+            }
+        }
+        
+        // Show no table data message
+        function showNoTableData() {
+            try {
+                console.log('Showing no table data message');
+                const container = document.getElementById('componentsContainer');
+                console.log('Components container found:', !!container);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-table fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Detailed Analysis</h5>
+                            <p class="text-muted">No tactical components breakdown available</p>
+                        </div>
+                    `;
+                    console.log('Updated components container with no data message');
+                }
+            } catch (error) {
+                console.error('Error showing no table data:', error);
+            }
+        }
+        // Display top 5 managers with relevance scoring
+        function displayTopManagers(topManagers) {
+            const container = document.getElementById('bestManagerContainer');
+            
+            if (!topManagers || topManagers.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No tactical data available for manager recommendations.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            console.log('Displaying top managers:', topManagers);
+            
+            // Take up to top 5 managers (they should already be sorted by score)
+            const displayManagers = topManagers.slice(0, 5);
+            
+            let managersHtml = '';
+            displayManagers.forEach((manager, index) => {
+                const badgeClasses = ['bg-success', 'bg-primary', 'bg-info', 'bg-warning', 'bg-secondary'];
+                const badgeTexts = ['#1 Best', '#2', '#3', '#4', '#5'];
+                const badgeClass = badgeClasses[index] || 'bg-secondary';
+                const badgeText = badgeTexts[index] || `#${index + 1}`;
+                
+                // Format formations as bullet points
+                let formationsHtml = '';
+                if (manager.formations && manager.formations.length > 0) {
+                    formationsHtml = '<ul class="list-unstyled mb-0 text-start">';
+                    manager.formations.forEach(formation => {
+                        formationsHtml += `<li><i class="fas fa-futbol me-1"></i> ${formation}</li>`;
+                    });
+                    formationsHtml += '</ul>';
+                } else {
+                    formationsHtml = '<p class="text-muted mb-0"><i class="fas fa-question-circle me-1"></i> No formations data</p>';
+                }
+                
+                // Format score (0-1 range to percentage)
+                const scorePercentage = Math.round(manager.score * 100);
+                const scoreDisplay = manager.score ? `${scorePercentage}%` : 'N/A';
+                
+                managersHtml += `
+                    <div class="col-lg-${displayManagers.length <= 3 ? '4' : '6'} col-md-6 mb-3">
+                        <div class="manager-card text-center p-3 h-100 border rounded shadow-sm">
+                            <div class="mb-2">
+                                <span class="badge ${badgeClass} fs-6 px-3 py-2">${badgeText}</span>
+                            </div>
+                            <h5 class="fw-bold text-primary mb-2">${manager.manager_name || manager.name || 'Unknown Manager'}</h5>
+                            <div class="mb-3">
+                                <div class="score-display">
+                                    <strong class="text-success fs-5">Score: ${scoreDisplay}</strong>
+                                </div>
+                                ${manager.score ? `<div class="progress mt-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: ${scorePercentage}%"></div>
+                                </div>` : ''}
+                            </div>
+                            <div class="formations-section">
+                                <h6 class="text-muted mb-2"><i class="fas fa-chess-board me-1"></i> Formations:</h6>
+                                ${formationsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = `<div class="row">${managersHtml}</div>`;
+        }
+        
+        // Update best component display - EXACT SAME logic as main dashboard
+        function updateBestComponent(bestComponent) {
+            console.log('Updating best component:', bestComponent);
+            
+            try {
+                // Ensure the content is visible first - SAME as main dashboard
+                const bestComponentContent = document.getElementById('bestComponentContent');
+                const bestComponentPlaceholder = document.getElementById('bestComponentPlaceholder');
+                
+                console.log('Elements found:', {
+                    bestComponentContent: !!bestComponentContent,
+                    bestComponentPlaceholder: !!bestComponentPlaceholder
+                });
+                
+                if (bestComponentPlaceholder) {
+                    bestComponentPlaceholder.style.display = 'none';
+                    console.log('Hid bestComponentPlaceholder');
+                }
+                if (bestComponentContent) {
+                    bestComponentContent.style.display = 'block';
+                    console.log('Showed bestComponentContent');
+                }
+                
+                // Handle missing or empty data - SAME as main dashboard
+                if (!bestComponent || (!bestComponent.name && !bestComponent.component)) {
+                    console.log('No best component data available');
+                    const nameEl = document.getElementById('bestTacticComponentName');
+                    const valueEl = document.getElementById('bestTacticComponentValue');
+                    const formationEl = document.getElementById('bestTacticFormation');
+                    const descEl = document.getElementById('bestTacticDescription');
+                    const descriptorsEl = document.getElementById('tacticDescriptors');
+                    
+                    if (nameEl) nameEl.textContent = 'No tactical data available';
+                    if (valueEl) valueEl.textContent = '0.00';
+                    if (formationEl) formationEl.textContent = 'No formation available';
+                    if (descEl) descEl.textContent = 'No tactical analysis available for this player';
+                    if (descriptorsEl) descriptorsEl.innerHTML = '<p class="text-muted">No detailed breakdown available</p>';
+                    return;
+                }
+                
+                // Handle both new and legacy data structures - SAME as main dashboard
+                const componentName = bestComponent.name || formatTacticComponentName(bestComponent.component);
+                const componentValue = bestComponent.score || bestComponent.value || 0;
+                const formation = bestComponent.formation || getFormationForComponent(bestComponent.component);
+                const description = bestComponent.description || getTacticDescription(bestComponent.component);
+                const descriptors = bestComponent.descriptors || [];
+                
+                console.log('Updating component display with:', {
+                    componentName,
+                    componentValue,
+                    formation,
+                    description,
+                    descriptorCount: descriptors.length
+                });
+                
+                const nameEl = document.getElementById('bestTacticComponentName');
+                const valueEl = document.getElementById('bestTacticComponentValue');
+                const formationEl = document.getElementById('bestTacticFormation');
+                const descEl = document.getElementById('bestTacticDescription');
+                const descriptorsEl = document.getElementById('tacticDescriptors');
+                
+                console.log('Display elements found:', {
+                    nameEl: !!nameEl,
+                    valueEl: !!valueEl,
+                    formationEl: !!formationEl,
+                    descEl: !!descEl,
+                    descriptorsEl: !!descriptorsEl
+                });
+                
+                if (nameEl) nameEl.textContent = componentName;
+                if (valueEl) valueEl.textContent = componentValue.toFixed(2);
+                if (formationEl) formationEl.textContent = formation;
+                if (descEl) descEl.textContent = description;
+                
+                // Add animation to best value - SAME as main dashboard
+                if (valueEl) {
+                    valueEl.classList.add('animation-pulse');
+                    setTimeout(() => {
+                        valueEl.classList.remove('animation-pulse');
+                    }, 2000);
+                }
+                
+                // Display descriptors/features - SAME as main dashboard
+                if (descriptorsEl) {
+                    if (descriptors && Array.isArray(descriptors) && descriptors.length > 0) {
+                        let descriptorsHtml = '';
+                        descriptors.slice(0, 10).forEach(descriptor => {
+                            if (descriptor && typeof descriptor === 'string') {
+                                descriptorsHtml += `<span class="descriptor-item">${descriptor}</span>`;
+                            }
+                        });
+                        if (descriptorsHtml) {
+                            descriptorsEl.innerHTML = descriptorsHtml;
+                        } else {
+                            descriptorsEl.innerHTML = '<p class="text-muted">No detailed breakdown available</p>';
+                        }
+                    } else {
+                        descriptorsEl.innerHTML = '<p class="text-muted">No detailed breakdown available</p>';
+                    }
+                }
+                
+                console.log('Best component updated successfully:', {
+                    name: componentName,
+                    value: componentValue,
+                    formation: formation,
+                    descriptorCount: descriptors ? descriptors.length : 0
+                });
+            } catch (error) {
+                console.error('Error updating best component:', error);
+                // Ensure content is still visible even if there's an error - SAME as main dashboard
+                const bestComponentContent = document.getElementById('bestComponentContent');
+                const bestComponentPlaceholder = document.getElementById('bestComponentPlaceholder');
+                if (bestComponentPlaceholder) bestComponentPlaceholder.style.display = 'none';
+                if (bestComponentContent) bestComponentContent.style.display = 'block';
+            }
+        }
+        
+        // Update manager recommendation
+        function updateManagerRecommendation(bestComponent, recommendedManagers) {
+            // This function is now replaced by displayTopManagers
+            // Keep for compatibility but redirect to new function
+            displayTopManagers(recommendedManagers);
+        }
+        
+        // Show loading state
+        function showLoadingState() {
+            try {
+                console.log('Showing loading state');
+                const bestComponentPlaceholder = document.getElementById('bestComponentPlaceholder');
+                const bestComponentContent = document.getElementById('bestComponentContent');
+                
+                console.log('Loading elements found:', {
+                    bestComponentPlaceholder: !!bestComponentPlaceholder,
+                    bestComponentContent: !!bestComponentContent
+                });
+                
+                if (bestComponentPlaceholder) {
+                    bestComponentPlaceholder.style.display = 'none';
+                    console.log('Hid bestComponentPlaceholder');
+                }
+                
+                if (bestComponentContent) {
+                    // Instead of replacing content, we'll show a loading overlay
+                    let loadingOverlay = document.getElementById('bestComponentLoadingOverlay');
+                    if (!loadingOverlay) {
+                        loadingOverlay = document.createElement('div');
+                        loadingOverlay.id = 'bestComponentLoadingOverlay';
+                        loadingOverlay.innerHTML = `
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading tactical components...</p>
+                            </div>
+                        `;
+                        loadingOverlay.style.position = 'absolute';
+                        loadingOverlay.style.top = '0';
+                        loadingOverlay.style.left = '0';
+                        loadingOverlay.style.width = '100%';
+                        loadingOverlay.style.height = '100%';
+                        loadingOverlay.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                        loadingOverlay.style.display = 'flex';
+                        loadingOverlay.style.alignItems = 'center';
+                        loadingOverlay.style.justifyContent = 'center';
+                        loadingOverlay.style.zIndex = '1000';
+                        
+                        // Add relative positioning to parent if needed
+                        if (bestComponentContent.style.position !== 'relative') {
+                            bestComponentContent.style.position = 'relative';
+                        }
+                        
+                        bestComponentContent.appendChild(loadingOverlay);
+                    }
+                    loadingOverlay.style.display = 'flex';
+                    bestComponentContent.style.display = 'block';
+                    console.log('Showed loading overlay');
+                }
+            } catch (error) {
+                console.error('Error showing loading state:', error);
+            }
+        }
+        
+        function hideLoadingState() {
+            try {
+                console.log('Hiding loading state');
+                const loadingOverlay = document.getElementById('bestComponentLoadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                    console.log('Hid loading overlay');
+                }
+                console.log('Loading state hidden');
+            } catch (error) {
+                console.error('Error hiding loading state:', error);
+            }
+        }
+        
+        // Hide placeholder elements
+        function hidePlaceholders() {
+            // Hide any placeholder content that might be showing
+            const placeholders = document.querySelectorAll('.placeholder-content, .loading-placeholder');
+            placeholders.forEach(placeholder => {
+                placeholder.style.display = 'none';
+            });
+            
+            // Also hide loading overlay if it exists
+            const loadingOverlay = document.getElementById('bestComponentLoadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+                console.log('Hid loading overlay in hidePlaceholders');
+            }
+        }
+        
+        // Show error message
+        function showErrorMessage(message) {
+            console.error('Tactical Components Error:', message);
+            
+            const errorHtml = `
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                    <div>
+                        <strong>Error Loading Tactical Components</strong><br>
+                        ${message}<br>
+                        <small class="text-muted">Please try selecting a different player or check the data.</small>
+                    </div>
+                </div>
+            `;
+            
+            // Show error in all sections - with safe element checking
+            try {
+                console.log('Showing error message:', message);
+                const bestComponentEl = document.getElementById('bestComponentContent');
+                const bestManagerEl = document.getElementById('bestManagerContainer');
+                const chartEl = document.getElementById('chartContainer');
+                const componentsEl = document.getElementById('componentsContainer');
+                
+                console.log('Error elements found:', {
+                    bestComponentEl: !!bestComponentEl,
+                    bestManagerEl: !!bestManagerEl,
+                    chartEl: !!chartEl,
+                    componentsEl: !!componentsEl
+                });
+                
+                // Hide any loading overlays first
+                hidePlaceholders();
+                
+                if (bestComponentEl) {
+                    bestComponentEl.innerHTML = errorHtml;
+                    console.log('Updated bestComponentEl with error');
+                }
+                if (bestManagerEl) {
+                    bestManagerEl.innerHTML = `<div class="col-12">${errorHtml}</div>`;
+                    console.log('Updated bestManagerEl with error');
+                }
+                if (chartEl) {
+                    chartEl.innerHTML = errorHtml;
+                    console.log('Updated chartEl with error');
+                }
+                if (componentsEl) {
+                    componentsEl.innerHTML = errorHtml;
+                    console.log('Updated componentsEl with error');
+                }
+            } catch (error) {
+                console.error('Error showing error message:', error);
+            }
+        }
+        
+        // Update tactical components chart
+        function updateTacticChart(recommendations, bestComponent) {
+            const tacticChartCtx = document.getElementById('tacticChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (tacticChart) {
+                tacticChart.destroy();
+            }
+            
+            // Prepare data for chart
+            const labels = recommendations.map(rec => formatTacticComponentName(rec.component));
+            const values = recommendations.map(rec => rec.value);
+            const backgroundColors = recommendations.map(rec => 
+                rec.component === bestComponent.component ? 'rgba(40, 167, 69, 0.7)' : 'rgba(26, 109, 204, 0.7)'
+            );
+            const borderColors = recommendations.map(rec => 
+                rec.component === bestComponent.component ? 'rgba(40, 167, 69, 1)' : 'rgba(26, 109, 204, 1)'
+            );
+            
+            // Create new chart
+            tacticChart = new Chart(tacticChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tactical Component Value',
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                },
+                                afterLabel: function(context) {
+                                    const component = recommendations[context.dataIndex].component;
+                                    return getTacticDescription(component);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 13,
+                                    weight: 'bold'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Component Value',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Update components table
+        function updateComponentsTable(recommendations, bestComponent) {
+            const container = document.getElementById('componentsContainer');
+            container.innerHTML = '';
+            
+            if (!recommendations || recommendations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-table fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Tactical Components Data</h5>
+                        <p class="text-muted">No detailed tactical analysis available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const bestComponentId = bestComponent?.component || bestComponent?.name || '';
+            
+            recommendations.forEach(rec => {
+                const isBest = rec.component === bestComponentId;
+                const componentCard = document.createElement('div');
+                componentCard.className = `component-card ${isBest ? 'best' : ''}`;
+                
+                const strengthLevel = getStrengthLevel(rec.value);
+                const tacticDescription = getTacticDescription(rec.component);
+                const formattedName = formatTacticComponentName(rec.component);
+                
+                componentCard.innerHTML = `
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6><i class="fas fa-chess-board me-2"></i>${formattedName}</h6>
+                            ${isBest ? '<span class="best-badge text-white"><i class="fas fa-crown me-1"></i>Best Tactic</span>' : ''}
+                        </div>
+                        <div class="col-md-2">
+                            <div class="tactic-value">${rec.value.toFixed(2)}</div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="strength-indicator">
+                                <div class="strength-dot ${strengthLevel.class}"></div>
+                                <span>${strengthLevel.text}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <p class="mb-0 text-muted">${tacticDescription}</p>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(componentCard);
+            });
+        }
+        
+        // Helper functions
+        function formatTacticComponentName(component) {
+            if (!component) return '-';
+            return component.replace('Tactic_Component_', 'Tactic ').replace('_', ' ');
+        }
+        
+        function getTacticDescription(component) {
+            const descriptions = {
+                'Tactic_Component_1': 'Defensive stability and compactness - Focus on maintaining defensive shape and organization',
+                'Tactic_Component_2': 'Possession-based play and build-up - Emphasize ball retention and controlled attacking',
+                'Tactic_Component_3': 'Progressive attacking and transitions - Quick transitions from defense to attack with direct play',
+                'Tactic_Component_4': 'High-intensity pressing and aggression - Aggressive pressing to win back possession quickly',
+                'Tactic_Component_5': 'Direct attacking and fast breaks - Direct passes and quick counter-attacks',
+                'Tactic_Component_6': 'Wing play and crossing opportunities - Utilize flanks and deliver crosses into the box',
+                'Tactic_Component_7': 'Technical play and creative passing - Intricate passing patterns and creative solutions'
+            };
+            
+            return descriptions[component] || 'Tactical approach';
+        }
+        
+        function getFormationForComponent(component) {
+            const formations = {
+                'Tactic_Component_1': '4-2-3-1 Defensive',
+                'Tactic_Component_2': '4-3-3 Possession',
+                'Tactic_Component_3': '3-5-2 Attacking',
+                'Tactic_Component_4': '4-4-2 High Press',
+                'Tactic_Component_5': '4-2-2-2 Counter',
+                'Tactic_Component_6': '3-4-3 Wide Play',
+                'Tactic_Component_7': '4-1-4-1 Technical'
+            };
+            
+            return formations[component] || 'Formation N/A';
+        }
+        
+        function getStrengthLevel(value) {
+            if (value >= 2.5) return { class: 'very-high', text: 'Very High' };
+            if (value >= 2.0) return { class: 'high', text: 'High' };
+            if (value >= 1.5) return { class: 'medium', text: 'Medium' };
+            return { class: 'low', text: 'Low' };
+        }
+        
+        function showPlaceholder() {
+            document.getElementById('bestComponentPlaceholder').style.display = 'block';
+            document.getElementById('bestComponentContent').style.display = 'none';
+            document.getElementById('managerPlaceholder').style.display = 'block';
+            document.getElementById('managerRecommendationContent').style.display = 'none';
+            document.getElementById('chartPlaceholder').style.display = 'block';
+            document.getElementById('chartContainer').style.display = 'none';
+            document.getElementById('detailsPlaceholder').style.display = 'block';
+            document.getElementById('componentsContainer').innerHTML = '';
+        }
+        
+        function hidePlaceholders() {
+            try {
+                const bestComponentPlaceholder = document.getElementById('bestComponentPlaceholder');
+                const bestComponentContent = document.getElementById('bestComponentContent');
+                const managerPlaceholder = document.getElementById('managerPlaceholder');
+                const managerRecommendationContent = document.getElementById('managerRecommendationContent');
+                const chartPlaceholder = document.getElementById('chartPlaceholder');
+                const chartContainer = document.getElementById('chartContainer');
+                const detailsPlaceholder = document.getElementById('detailsPlaceholder');
+                
+                console.log('Hiding placeholders:', {
+                    bestComponentPlaceholder: !!bestComponentPlaceholder,
+                    bestComponentContent: !!bestComponentContent,
+                    managerPlaceholder: !!managerPlaceholder,
+                    managerRecommendationContent: !!managerRecommendationContent,
+                    chartPlaceholder: !!chartPlaceholder,
+                    chartContainer: !!chartContainer,
+                    detailsPlaceholder: !!detailsPlaceholder
+                });
+                
+                if (bestComponentPlaceholder) {
+                    bestComponentPlaceholder.style.display = 'none';
+                    console.log('Hid bestComponentPlaceholder');
+                }
+                if (bestComponentContent) {
+                    bestComponentContent.style.display = 'block';
+                    console.log('Showed bestComponentContent');
+                }
+                if (managerPlaceholder) {
+                    managerPlaceholder.style.display = 'none';
+                    console.log('Hid managerPlaceholder');
+                }
+                if (managerRecommendationContent) {
+                    managerRecommendationContent.style.display = 'block';
+                    console.log('Showed managerRecommendationContent');
+                }
+                if (chartPlaceholder) {
+                    chartPlaceholder.style.display = 'none';
+                    console.log('Hid chartPlaceholder');
+                }
+                if (chartContainer) {
+                    chartContainer.style.display = 'block';
+                    console.log('Showed chartContainer');
+                }
+                if (detailsPlaceholder) {
+                    detailsPlaceholder.style.display = 'none';
+                    console.log('Hid detailsPlaceholder');
+                }
+                
+                console.log('Placeholders hidden, content shown');
+            } catch (error) {
+                console.error('Error hiding placeholders:', error);
+            }
+        }
+        
+        // Add navigation buttons with URL parameters
+        function addNavigationButtons() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('player_id');
+            const year = urlParams.get('year');
+            const model = urlParams.get('model');
+            
+            if (playerId) {
+                // Update back to dashboard link
+                const dashboardLink = document.querySelector('a[href="/"]');
+                if (dashboardLink) {
+                    let href = `/?player_id=${playerId}`;
+                    if (year) href += `&year=${year}`;
+                    if (model) href += `&model=${model}`;
+                    dashboardLink.href = href;
+                }
+            }
+        }
+        
+        // Call on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            addNavigationButtons();
+        });
+        
+        // Variable Loadings Functions
+        function loadVariableLoadingsAccordion(componentsData) {
+            const section = document.getElementById('variableLoadingsSection');
+            const accordion = document.getElementById('tacticalComponentsAccordion');
+            
+            if (!componentsData || componentsData.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            // Show the section
+            section.style.display = 'block';
+            accordion.innerHTML = '';
+            
+            // Create accordion items for each tactical component
+            const tacticalComponents = ['Tactic_Component_1', 'Tactic_Component_2', 'Tactic_Component_3', 
+                                      'Tactic_Component_4', 'Tactic_Component_5', 'Tactic_Component_6', 
+                                      'Tactic_Component_7'];
+            
+            tacticalComponents.forEach((component, index) => {
+                const componentData = componentsData.find(item => item.component === component);
+                const componentValue = componentData ? componentData.value.toFixed(2) : '0.00';
+                const isExpanded = index === 0; // Expand first item by default
+                
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'accordion-item';
+                accordionItem.innerHTML = `
+                    <h2 class="accordion-header" id="heading${index}">
+                        <button class="accordion-button ${isExpanded ? '' : 'collapsed'}" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#collapse${index}" 
+                                aria-expanded="${isExpanded}" aria-controls="collapse${index}"
+                                onclick="loadVariableLoadings('${component}', ${index})">
+                            <i class="fas fa-chess-board me-2"></i>
+                            ${formatTacticComponentName(component)} 
+                            <span class="badge bg-primary ms-2">Score: ${componentValue}</span>
+                        </button>
+                    </h2>
+                    <div id="collapse${index}" class="accordion-collapse collapse ${isExpanded ? 'show' : ''}" 
+                         aria-labelledby="heading${index}" data-bs-parent="#tacticalComponentsAccordion">
+                        <div class="accordion-body">
+                            <div id="loadings${index}" class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading variable loadings...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                accordion.appendChild(accordionItem);
+                
+                // Load first item immediately
+                if (isExpanded) {
+                    setTimeout(() => loadVariableLoadings(component, index), 100);
+                }
+            });
+        }
+        
+        function loadVariableLoadings(component, index) {
+            const loadingsContainer = document.getElementById(`loadings${index}`);
+            
+            if (!loadingsContainer) {
+                console.error('Loadings container not found for index:', index);
+                return;
+            }
+            
+            // Check if already loaded
+            if (loadingsContainer.dataset.loaded === 'true') {
+                return;
+            }
+            
+            console.log('Loading variable loadings for component:', component);
+            
+            fetch(`/get_tactic_variable_loadings?component=${encodeURIComponent(component)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error from variable loadings API:', data.error);
+                        loadingsContainer.innerHTML = `
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Error loading variable loadings: ${data.error}
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    displayVariableLoadings(data, loadingsContainer);
+                    loadingsContainer.dataset.loaded = 'true';
+                })
+                .catch(error => {
+                    console.error('Error loading variable loadings:', error);
+                    loadingsContainer.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load variable loadings: ${error.message}
+                        </div>
+                    `;
+                });
+        }
+        
+        function displayVariableLoadings(data, container) {
+            const variableLoadings = data.variable_loadings || [];
+            
+            if (variableLoadings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+                        <h6 class="text-muted">No contributors available</h6>
+                        <p class="text-muted mb-0">No variable loading data found for this component.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let loadingsHtml = `
+                <div class="mb-3">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Top ${variableLoadings.length} Variable Contributors</h6>
+                    <p class="text-muted small">Variables that most strongly define this tactical component:</p>
+                </div>
+            `;
+            
+            variableLoadings.forEach((item, index) => {
+                const loading = parseFloat(item.loading);
+                let strengthClass = 'loading-low';
+                let strengthText = 'Low';
+                
+                if (loading >= 2.0) {
+                    strengthClass = 'loading-very-high';
+                    strengthText = 'Very High';
+                } else if (loading >= 1.5) {
+                    strengthClass = 'loading-high';
+                    strengthText = 'High';
+                } else if (loading >= 1.0) {
+                    strengthClass = 'loading-medium';
+                    strengthText = 'Medium';
+                }
+                
+                // Format variable name for display
+                const formattedName = item.variable.replace(/__/g, ': ').replace(/_/g, ' ');
+                
+                loadingsHtml += `
+                    <div class="variable-item">
+                        <div class="variable-info">
+                            <div class="variable-name">${index + 1}. ${formattedName}</div>
+                        </div>
+                        <div class="variable-value">
+                            <span class="variable-loading">${loading.toFixed(2)}</span>
+                            <span class="loading-strength ${strengthClass}">${strengthText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            loadingsHtml += `
+                <div class="mt-3 p-2 bg-light rounded">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <strong>Note:</strong> Higher loading values indicate stronger association with this tactical component.
+                    </small>
+                </div>
+            `;
+            
+            container.innerHTML = loadingsHtml;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Tactical Recommendations Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a6dcc;
+            --secondary-color: #28a745;
+            --accent-color: #ffc107;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --purple: #6f42c1;
+            --teal: #20c997;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+        
+        .dashboard-header {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.2)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .dashboard-header .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 700;
+            padding: 18px 25px;
+            font-size: 1.25rem;
+            border-bottom: none;
+            position: relative;
+        }
+        
+        .card-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--teal), var(--purple));
+        }
+        
+        .player-image {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .player-image::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--teal), var(--purple));
+            z-index: -1;
+        }
+        
+        .player-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .best-tactic {
+            border: 4px solid var(--secondary-color);
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.2)) !important;
+            box-shadow: 0 0 25px rgba(40, 167, 69, 0.4);
+        }
+        
+        .recommendation-table th {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), #2a75dc);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(26, 109, 204, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 109, 204, 0.6);
+        }
+        
+        .btn-primary:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .tactic-value {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .best-badge {
+            background: linear-gradient(to right, var(--secondary-color), #34ce57);
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .formation-display {
+            background: linear-gradient(135deg, rgba(26, 109, 204, 0.15), rgba(26, 109, 204, 0.25));
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .formation-display::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="1" fill="rgba(26, 109, 204, 0.2)" /></svg>');
+            opacity: 0.3;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 25px 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .ability-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 20px 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Hexagon-style ability layout */
+        .hexagon-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hexagon-ability {
+            position: relative;
+            width: 100%;
+        }
+        
+        .hexagon-center {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .hexagon-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .hexagon-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
+        .hexagon-bottom-left {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        
+        .hexagon-bottom-right {
+            grid-column: 3;
+            grid-row: 3;
+        }
+        
+        .ability-hexagon-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px;
+            padding: 15px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(0, 0, 0, 0.03);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .ability-hexagon-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(135deg, var(--primary-color), var(--teal), var(--purple));
+        }
+        
+        .ability-hexagon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-color: rgba(26, 109, 204, 0.3);
+        }
+        
+        .ability-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--teal), var(--purple));
+        }
+        
+        .ability-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-color: rgba(26, 109, 204, 0.3);
+        }
+        
+        .ability-icon {
+            margin-bottom: 10px;
+        }
+        
+        .ability-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            opacity: 0.8;
+        }
+        
+        .ability-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            line-height: 1;
+        }
+        
+        .ability-description {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(26, 109, 204, 0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.2;
+        }
+        
+        .model-selector {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .model-selector::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--teal), var(--purple));
+        }
+        
+        .model-selector h5 {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .form-select {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(26, 109, 204, 0.25);
+        }
+        
+        .display-3 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-color), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tactic-description {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .tactic-description h5 {
+            color: var(--primary-color);
+            font-weight: 700;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .progress {
+            height: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        .radar-chart-container {
+            position: relative;
+            height: 400px;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .component-card {
+            background: linear-gradient(135deg, rgba(26, 109, 204, 0.1), rgba(26, 109, 204, 0.2));
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .component-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .component-card.best {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(40, 167, 69, 0.25));
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        }
+        
+        .component-card h6 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .component-card.best h6 {
+            color: var(--secondary-color);
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, rgba(23, 162, 184, 0.15), rgba(23, 162, 184, 0.25));
+            border: none;
+            border-radius: 12px;
+            color: #0c5460;
+        }
+        
+        .strength-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .strength-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .strength-dot.low { background-color: var(--danger-color); }
+        .strength-dot.medium { background-color: var(--warning-color); }
+        .strength-dot.high { background-color: var(--success-color); }
+        .strength-dot.very-high { background-color: var(--teal); }
+        
+        .tactic-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .best-tactic-icon {
+            color: var(--secondary-color);
+        }
+        
+        .animation-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .glow {
+            box-shadow: 0 0 15px rgba(26, 109, 204, 0.5);
+        }
+        
+        .best-glow {
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.7);
+        }
+        
+        .manager-image {
+            max-width: 80px;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+        }
+        
+        .manager-image-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .manager-image-container::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--teal));
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-futbol me-3"></i>Football Tactical Recommendations Dashboard</h1>
+                    <p class="lead">Data-driven tactical insights for optimal player performance</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="model-selector">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Select AI Model</h5>
+                    <p class="text-muted mb-0">Choose the machine learning model for tactical analysis</p>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="modelSelect">
+                        {% for model in models %}
+                        <option value="{{ model }}" {% if loop.first %}selected{% endif %}>{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="yearSelect">
+                        <option value="">All Years</option>
+                        {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <!-- Global Model Performance Display -->
+                    <div id="globalModelPerformance" style="display: none;">
+                        <h6 class="mb-1"><i class="fas fa-award me-1"></i>Best Model</h6>
+                        <div id="bestModelDisplay" class="text-success fw-bold"></div>
+                        <small id="currentModelStatus" class="text-muted"></small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Model Performance Table -->
+            <div id="modelPerformanceTable" class="mt-3" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-chart-line me-2"></i>Model Performance Comparison (F1 Scores)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>F1 Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modelScoresBody">
+                                    <!-- Model scores will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user me-2"></i>Player Selection</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label for="playerSelect" class="form-label fw-bold">Select Player</label>
+                            <select class="form-select" id="playerSelect">
+                                <option value="">Choose a player...</option>
+                                {% for player in players %}
+                                <option value="{{ player.Player_ID }}">{{ player.Player_Name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button id="analyzeBtn" class="btn btn-primary w-100" disabled>
+                            <i class="fas fa-chart-line me-2"></i>Analyze Player
+                        </button>
+                        
+                        <div class="loading-spinner" id="loadingSpinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 fs-5">Analyzing tactical data...</p>
+                            <p class="text-muted">Generating personalized recommendations</p>
+                        </div>
+                        
+                        <!-- Add navigation buttons -->
+                        <div class="mt-4">
+                            <a href="#" id="viewInsightsBtn" class="btn btn-info w-100 mb-2">
+                                <i class="fas fa-chart-line me-2"></i>View Insights
+                            </a>
+                            <a href="#" id="viewTacticalBtn" class="btn btn-warning w-100 mb-2">
+                                <i class="fas fa-chart-bar me-2"></i>View Tactical Components
+                            </a>
+                            <a href="/manager_analysis" class="btn btn-success w-100">
+                                <i class="fas fa-user-tie me-2"></i>View Manager Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle me-2"></i>Player Information</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div id="playerImageContainer">
+                            <img id="playerImage" class="player-image mb-4" src="" alt="Player Image" style="display: none;">
+                            <div id="noImagePlaceholder" class="text-muted">
+                                <i class="fas fa-user fa-4x mb-3"></i>
+                                <p class="fs-5">No image available</p>
+                            </div>
+                        </div>
+                        <h3 id="playerName" class="fw-bold mb-2">-</h3>
+                        <p id="playerPosition" class="text-muted fs-5 mb-4">-</p>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="playerImpactScore">-</div>
+                                    <div class="stat-label">Impact Score</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="playerBMI">-</div>
+                                    <div class="stat-label">BMI</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="playerTeam" style="font-size: 1.2rem;">-</div>
+                                    <div class="stat-label">Team</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="selectedYear">-</div>
+                                    <div class="stat-label">Season</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Remove the Recommended Managers section from here -->
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-trophy me-2"></i>Best Tactical Recommendation</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 id="bestTacticComponent" class="fw-bold text-success mb-3">-</h2>
+                        <div class="display-3 fw-bold mb-3" id="bestTacticValue">-</div>
+                        <div class="formation-display">
+                            <h5><i class="fas fa-chess-board me-2"></i>Recommended Formation</h5>
+                            <h3 id="recommendedFormation" class="fw-bold mb-3">-</h3>
+                        </div>
+                        <div class="tactic-description">
+                            <h5><i class="fas fa-lightbulb me-2"></i>Tactical Insight</h5>
+                            <p id="tacticDescription" class="mb-0">-</p>
+                        </div>
+                        <p class="text-muted mt-3">This formation maximizes the player's tactical effectiveness based on their attributes</p>
+                    </div>
+                </div>
+                
+                <!-- Player Abilities and Skills Radar in a single row -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-radar me-2"></i>Player Skills Radar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="radar-chart-container">
+                                    <canvas id="radarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-running me-2"></i>Player Abilities</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="playerScoresContainer">
+                                    <div class="col-12 text-center">
+                                        <p class="text-muted">Select a player and year to see abilities</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Move Impact Score Over Time Graph here -->
+                <!-- REMOVED: Impact Score Over Time Graph has been moved to insights.html -->
+            </div>
+        </div>
+        
+        <footer class="text-center">
+            <p class="mb-0 fs-5"><i class="fas fa-futbol me-2"></i>Football Tactical Recommendations Dashboard &copy; 2025</p>
+            <p class="mb-0"><small>Powered by Machine Learning and Data Analytics</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let radarChart = null;
+        
+        // DOM Elements
+        const playerSelect = document.getElementById('playerSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const playerName = document.getElementById('playerName');
+        const playerPosition = document.getElementById('playerPosition');
+        const playerImage = document.getElementById('playerImage');
+        const noImagePlaceholder = document.getElementById('noImagePlaceholder');
+        const playerImageContainer = document.getElementById('playerImageContainer');
+        const bestTacticComponent = document.getElementById('bestTacticComponent');
+        const bestTacticValue = document.getElementById('bestTacticValue');
+        const recommendedFormation = document.getElementById('recommendedFormation');
+        const tacticDescription = document.getElementById('tacticDescription');
+        const radarChartCtx = document.getElementById('radarChart').getContext('2d');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const playerImpactScore = document.getElementById('playerImpactScore');
+        const playerBMI = document.getElementById('playerBMI');
+        const playerTeam = document.getElementById('playerTeam');
+        const selectedYear = document.getElementById('selectedYear');
+        
+        // Event Listeners
+        playerSelect.addEventListener('change', function() {
+            const playerId = this.value;
+            analyzeBtn.disabled = !playerId;
+            
+            // Update navigation buttons with player context
+            updateNavigationButtons(playerId, yearSelect.value, modelSelect.value);
+            
+            if (playerId) {
+                // Save player state to localStorage for cross-page persistence
+                savePlayerState(playerId, yearSelect.value, modelSelect.value);
+                
+                // Clear previous year selections and fetch player-specific years
+                yearSelect.innerHTML = '<option value="">Loading...</option>';
+                loadPlayerInfo(playerId, yearSelect.value);
+            } else {
+                // Clear localStorage when no player selected
+                localStorage.removeItem('playerSelectionState');
+                resetPlayerInfo();
+                // Reset year dropdown to default
+                resetYearDropdown();
+            }
+        });
+        
+        yearSelect.addEventListener('change', function() {
+            const playerId = playerSelect.value;
+            if (playerId) {
+                // Save updated state to localStorage
+                savePlayerState(playerId, this.value, modelSelect.value);
+                
+                loadPlayerInfo(playerId, this.value || '');  // Pass empty string if no year selected
+                // Update navigation buttons with new year
+                updateNavigationButtons(playerId, this.value, modelSelect.value);
+                if (document.getElementById('playerScoresContainer').children.length > 1) {
+                    loadRecommendations(playerId, modelSelect.value, this.value || '');
+                }
+            }
+        });
+        
+        // Add model select change listener
+        modelSelect.addEventListener('change', function() {
+            const playerId = playerSelect.value;
+            if (playerId) {
+                // Save updated state to localStorage
+                savePlayerState(playerId, yearSelect.value, this.value);
+                
+                // Update navigation buttons with new model
+                updateNavigationButtons(playerId, yearSelect.value, this.value);
+            }
+        });
+        
+        // Add helper functions for year dropdown management and error handling
+        function updateYearDropdown(availableYears, selectedYear) {
+            // Clear existing options
+            yearSelect.innerHTML = '';
+            
+            // Add "All Years" option
+            const allYearsOption = document.createElement('option');
+            allYearsOption.value = '';
+            allYearsOption.textContent = 'All Years';
+            yearSelect.appendChild(allYearsOption);
+            
+            // Add available years
+            availableYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+            
+            // Set selected value if provided
+            if (selectedYear && selectedYear !== 'All Years') {
+                const yearMatch = selectedYear.match(/\d{4}/);
+                if (yearMatch) {
+                    yearSelect.value = yearMatch[0];
+                } else {
+                    yearSelect.value = '';
+                }
+            } else {
+                yearSelect.value = '';
+            }
+            
+            console.log('Updated year dropdown with years:', availableYears, 'Selected:', selectedYear);
+        }
+        
+        function resetYearDropdown() {
+            yearSelect.innerHTML = `
+                <option value="">All Years</option>
+                {% for year in years %}
+                <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            `;
+        }
+        
+        function showErrorMessage(message) {
+            // Create error message element if it doesn't exist
+            let errorDiv = document.getElementById('errorMessage');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'errorMessage';
+                errorDiv.className = 'alert alert-danger mt-3';
+                errorDiv.style.display = 'none';
+                document.querySelector('.container-fluid').insertBefore(errorDiv, document.querySelector('.row'));
+            }
+            
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+            errorDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function getFormationForComponent(component) {
+            const formations = {
+                'Tactic_Component_1': '4-2-3-1 Defensive',
+                'Tactic_Component_2': '4-3-3 Possession', 
+                'Tactic_Component_3': '3-5-2 Attacking',
+                'Tactic_Component_4': '4-4-2 High Press',
+                'Tactic_Component_5': '4-2-2-2 Counter',
+                'Tactic_Component_6': '3-4-3 Wide Play',
+                'Tactic_Component_7': '4-1-4-1 Technical'
+            };
+            return formations[component] || 'Formation N/A';
+        }
+        
+        function getTacticDescription(component) {
+            const descriptions = {
+                'Tactic_Component_1': 'Defensive stability and compactness - Focus on maintaining defensive shape',
+                'Tactic_Component_2': 'Possession-based play and build-up - Emphasize ball retention and controlled attacking',
+                'Tactic_Component_3': 'Progressive attacking and transitions - Quick transitions from defense to attack',
+                'Tactic_Component_4': 'High-intensity pressing and aggression - Aggressive pressing to win back possession',
+                'Tactic_Component_5': 'Direct attacking and fast breaks - Direct passes and quick counter-attacks',
+                'Tactic_Component_6': 'Wing play and crossing opportunities - Utilize flanks and deliver crosses',
+                'Tactic_Component_7': 'Technical play and creative passing - Intricate passing patterns and creative solutions'
+            };
+            return descriptions[component] || 'Tactical approach';
+        }
+        
+        function formatTacticComponentName(component) {
+            if (!component) {
+                return 'Unknown Component';
+            }
+            
+            // Remove prefix and format
+            const name = component.replace('Tactic_Component_', 'Tactical Component ');
+            return name;
+        }
+        
+        function showSpinner(show = true) {
+            if (show) {
+                loadingSpinner.style.display = 'block';
+                analyzeBtn.disabled = true;
+            } else {
+                loadingSpinner.style.display = 'none';
+                analyzeBtn.disabled = !playerSelect.value;
+            }
+        }
+        
+        analyzeBtn.addEventListener('click', function() {
+            const playerId = playerSelect.value;
+            const modelName = modelSelect.value;
+            const year = yearSelect.value || '';  // Pass empty string if no year selected
+            
+            if (playerId) {
+                loadRecommendations(playerId, modelName, year);
+            }
+        });
+        
+        // Functions
+        function loadRecommendations(playerId, modelName, year) {
+            // Show loading spinner
+            showSpinner(true);
+            
+            const formData = new FormData();
+            formData.append('player_id', playerId);
+            formData.append('model_name', modelName);
+            if (year && year.trim() && year.toLowerCase() !== 'all years') {
+                formData.append('year', year);
+            }
+            
+            console.log('Loading recommendations for:', playerId, modelName, year);
+            
+            fetch('/get_recommendations', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    console.log('Recommendations response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showSpinner(false);
+                    
+                    console.log('Recommendations response data:', data);
+                    
+                    if (data.error) {
+                        console.error('Recommendations error:', data.error);
+                        showErrorMessage('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Handle new API response format
+                    displayRecommendations(data);
+                    
+                    // Display global model performance if available
+                    if (data.global_model_performance) {
+                        displayGlobalModelPerformance(data.global_model_performance);
+                    }
+                })
+                .catch(error => {
+                    showSpinner(false);
+                    
+                    console.error('Error loading recommendations:', error);
+                    showErrorMessage('Error loading recommendations: ' + error.message + '. Please try again.');
+                });
+        }
+        function loadPlayerInfo(playerId, year) {
+            // Construct URL with proper query parameters
+            let url = `/get_player_info?player_id=${playerId}`;
+            if (year && year.trim() && year.toLowerCase() !== 'all years') {
+                url += `&year=${year}`;
+            }
+            
+            console.log('Loading player info from:', url);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Player info response:', data);
+                    
+                    if (data.error) {
+                        console.error('Player info error:', data.error);
+                        showErrorMessage('Error loading player info: ' + data.error);
+                        return;
+                    }
+                    
+                    // Update year dropdown with player-specific years
+                    if (data.available_years && data.available_years.length > 0) {
+                        updateYearDropdown(data.available_years, data.selected_year);
+                    }
+                    
+                    // Handle the new API response format
+                    playerName.textContent = data.player_name || 'Unknown Player';
+                    playerPosition.textContent = data.position || 'Unknown Position';
+                    
+                    // Display Impact Score
+                    playerImpactScore.textContent = data.impact_score !== null && data.impact_score !== undefined ? 
+                        data.impact_score.toFixed(2) : '-';
+                    playerBMI.textContent = data.bmi ? data.bmi.toFixed(1) : '-';
+                    
+                    // Display team name
+                    playerTeam.textContent = data.team_name || '-';
+                    
+                    // Update the selected year display
+                    document.getElementById('selectedYear').textContent = data.selected_year || 'All Years';
+                    
+                    // Update player abilities if available
+                    if (data.abilities && Object.keys(data.abilities).length > 0) {
+                        updatePlayerScores(data.abilities);
+                    }
+                    
+                    // Handle player image
+                    if (data.image_exists && data.image_path) {
+                        playerImage.src = data.image_path;
+                        playerImage.style.display = 'block';
+                        noImagePlaceholder.style.display = 'none';
+                        
+                        // Test if image loads, if not show placeholder
+                        playerImage.onload = function() {
+                            playerImage.style.display = 'block';
+                            noImagePlaceholder.style.display = 'none';
+                        };
+                        
+                        playerImage.onerror = function() {
+                            playerImage.style.display = 'none';
+                            noImagePlaceholder.style.display = 'block';
+                        };
+                    } else {
+                        // No image available
+                        playerImage.style.display = 'none';
+                        noImagePlaceholder.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading player info:', error);
+                    showErrorMessage('Error loading player info: ' + error.message);
+                });
+        }
+        
+        function loadRecommendations(playerId, modelName, year) {
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            analyzeBtn.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('player_id', playerId);
+            formData.append('model_name', modelName);
+            if (year && year.trim() && year.toLowerCase() !== 'all years') {
+                formData.append('year', year);
+            }
+            
+            console.log('Loading recommendations for:', playerId, modelName, year);
+            
+            fetch('/get_recommendations', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    console.log('Recommendations response status:', response.status);
+                    // Check if response is OK
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    
+                    console.log('Recommendations response data:', data);
+                    
+                    if (data.error) {
+                        console.error('Recommendations error:', data.error);
+                        showErrorMessage('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Safety check for required data structures
+                    if (!data.best_tactics || data.best_tactics.length === 0) {
+                        console.warn('No best_tactics found in response, using fallback');
+                        data.best_tactics = [{
+                            component: data.best_tactic || 'Unknown',
+                            value: data.tactic_value || 0,
+                            formation: 'N/A',
+                            description: 'No tactics available'
+                        }];
+                    }
+                    
+                    if (!data.best_managers) {
+                        console.warn('No best_managers found, using recommended_managers or empty array');
+                        data.best_managers = data.recommended_managers || [];
+                    }
+                    
+                    if (!data.scores) {
+                        console.warn('No scores found, creating default structure');
+                        data.scores = {
+                            impact_score: data.impact || 0,
+                            best_tactic_value: data.tactic_value || 0
+                        };
+                    }
+                    
+                    if (!data.abilities) {
+                        console.warn('No abilities found, creating default structure');
+                        data.abilities = {
+                            Passing: 0,
+                            Shooting: 0,
+                            Creativity: 0,
+                            Dribbling: 0,
+                            Defense: 0
+                        };
+                    }
+                    
+                    displayRecommendations(data);
+                })
+                .catch(error => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    
+                    console.error('Error loading recommendations:', error);
+                    alert('Error loading recommendations: ' + error.message + '. Please try again.');
+                });
+        }
+        
+        function displayRecommendations(data) {
+            console.log('Displaying recommendations with data:', data);
+            
+            try {
+                // Safety checks for all required data
+                const bestTactics = data.best_tactics || [];
+                const bestManagers = data.best_managers || [];
+                const scores = data.scores || {};
+                const abilities = data.abilities || {};
+                
+                // Handle best tactic display
+                if (bestTactics.length > 0) {
+                    const bestTactic = bestTactics[0];
+                    bestTacticComponent.textContent = formatTacticComponentName(bestTactic.component) || 'Unknown';
+                    bestTacticValue.textContent = (bestTactic.value || 0).toFixed(2);
+                    recommendedFormation.textContent = bestTactic.formation || getFormationForComponent(bestTactic.component);
+                    tacticDescription.textContent = bestTactic.description || getTacticDescription(bestTactic.component);
+                } else {
+                    // Fallback to legacy format
+                    const bestTactic = data.best_tactic || data.best_component?.component || 'Unknown';
+                    const tacticValue = data.tactic_value || data.best_component?.value || 0;
+                    
+                    bestTacticComponent.textContent = formatTacticComponentName(bestTactic);
+                    bestTacticValue.textContent = tacticValue.toFixed(2);
+                    recommendedFormation.textContent = getFormationForComponent(bestTactic);
+                    tacticDescription.textContent = getTacticDescription(bestTactic);
+                }
+                
+                // Add animation to best value
+                bestTacticValue.classList.add('animation-pulse');
+                setTimeout(() => {
+                    bestTacticValue.classList.remove('animation-pulse');
+                }, 2000);
+                
+                // Update player scores with safety checks
+                if (abilities && Object.keys(abilities).length > 0) {
+                    // Filter out zero values for better display
+                    const nonZeroAbilities = Object.fromEntries(
+                        Object.entries(abilities).filter(([key, value]) => value > 0)
+                    );
+                    
+                    if (Object.keys(nonZeroAbilities).length > 0) {
+                        updatePlayerScores(abilities);
+                    } else {
+                        showNoAbilitiesMessage();
+                    }
+                } else {
+                    showNoAbilitiesMessage();
+                }
+                
+                // Update radar chart with safety
+                const radarTactic = bestTactics.length > 0 ? bestTactics[0].component : (data.best_tactic || 'Unknown');
+                const radarValue = bestTactics.length > 0 ? bestTactics[0].value : (data.tactic_value || 0);
+                updateRadarChart(radarTactic, radarValue, abilities);
+                
+                // Display recommendations table if available
+                if (data.recommendations && data.recommendations.length > 0) {
+                    displayRecommendationsTable(data.recommendations, data.best_component);
+                }
+                
+            } catch (error) {
+                console.error('Error displaying recommendations:', error);
+                showErrorMessage('Error displaying recommendations: ' + error.message);
+            }
+        }
+        
+        function showNoAbilitiesMessage() {
+            const container = document.getElementById('playerScoresContainer');
+            container.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="text-center p-5 border rounded-3" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2) !important;">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3" style="opacity: 0.5;"></i>
+                            <h5 class="text-muted mb-2">No Player Abilities Data</h5>
+                            <p class="text-muted mb-0">Select a player and analyze to see their abilities breakdown</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showErrorMessage(message) {
+            const container = document.getElementById('playerScoresContainer');
+            container.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                            <div>
+                                <strong>Error Loading Abilities</strong><br>
+                                ${message}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+                let strengthLevel = 'Low';
+                let strengthClass = 'bg-danger';
+                let strengthDotClass = 'low';
+                if (rec.value > 1.5) {
+                    strengthLevel = 'Very High';
+                    strengthClass = 'bg-success';
+                    strengthDotClass = 'very-high';
+                } else if (rec.value > 1) {
+                    strengthLevel = 'High';
+                    strengthClass = 'bg-success';
+                    strengthDotClass = 'high';
+                } else if (rec.value > 0) {
+                    strengthLevel = 'Medium';
+                    strengthClass = 'bg-warning text-dark';
+                    strengthDotClass = 'medium';
+                }
+                
+                row.innerHTML = `
+                    <td><i class="fas fa-${getTacticIcon(rec.component)} tactic-icon ${isBest ? 'best-tactic-icon' : ''}"></i>${formatTacticComponentName(rec.component)}</td>
+                    <td>${tacticDetails}</td>
+                    <td class="tactic-value">${rec.value.toFixed(2)}</td>
+                    <td>
+                        <div class="strength-indicator">
+                            <div class="strength-dot ${strengthDotClass}"></div>
+                            <span>${strengthLevel}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar ${strengthClass}" role="progressbar" style="width: ${Math.min(Math.abs(rec.value) * 25, 100)}%" aria-valuenow="${Math.abs(rec.value) * 25}" aria-valuemin="0" aria-valuemax="100">
+                                ${strengthLevel}
+                            </div>
+                        </div>
+                    </td>
+                    <td>${isBest ? '<span class="best-badge"><i class="fas fa-star me-1"></i>BEST</span>' : ''}</td>
+                `;
+                
+                recommendationsTable.appendChild(row);
+        // Initialize page from URL parameters if present
+        function initializeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('player_id');
+            const year = urlParams.get('year');
+            const model = urlParams.get('model');
+            
+            if (playerId) {
+                playerSelect.value = playerId;
+                analyzeBtn.disabled = false;
+                loadPlayerInfo(playerId, year || '');
+            }
+            
+            if (year) {
+                yearSelect.value = year;
+            }
+            
+            if (model) {
+                modelSelect.value = model;
+            }
+            
+            // Update navigation buttons
+            updateNavigationButtons(playerId, year, model);
+        }
+        
+        function updateNavigationButtons(playerId, year, model) {
+            const viewInsightsBtn = document.getElementById('viewInsightsBtn');
+            const viewTacticalBtn = document.getElementById('viewTacticalBtn');
+            
+            if (playerId) {
+                // Build query parameters
+                const params = new URLSearchParams();
+                params.append('player_id', playerId);
+                if (year && year.trim()) {
+                    params.append('year', year);
+                }
+                if (model && model.trim()) {
+                    params.append('model', model);
+                }
+                
+                const queryString = params.toString();
+                viewInsightsBtn.href = `/insights?${queryString}`;
+                viewTacticalBtn.href = `/tactical_components?${queryString}`;
+                
+                // Enable buttons
+                viewInsightsBtn.classList.remove('disabled');
+                viewTacticalBtn.classList.remove('disabled');
+            } else {
+                // Disable buttons
+                viewInsightsBtn.href = '#';
+                viewTacticalBtn.href = '#';
+                viewInsightsBtn.classList.add('disabled');
+                viewTacticalBtn.classList.add('disabled');
+            }
+        } // Updated function to handle navigation buttons
+        
+        // Initialize page from URL parameters if present
+        function initializeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('player_id');
+            const year = urlParams.get('year');
+            const model = urlParams.get('model');
+            
+            if (playerId) {
+                playerSelect.value = playerId;
+                analyzeBtn.disabled = false;
+                loadPlayerInfo(playerId, year || '');
+            }
+            
+            if (year) {
+                yearSelect.value = year;
+            }
+            
+            if (model) {
+                modelSelect.value = model;
+            }
+            
+            // Update navigation buttons
+            updateNavigationButtons(playerId, year, model);
+        }
+        
+        function resetPlayerInfo() {
+            playerName.textContent = '-';
+            playerPosition.textContent = '-';
+            playerImpactScore.textContent = '-';
+            playerBMI.textContent = '-';
+            playerTeam.textContent = '-';
+            document.getElementById('selectedYear').textContent = '-';
+            
+            // Reset player image
+            playerImage.style.display = 'none';
+            noImagePlaceholder.style.display = 'block';
+            
+            // Reset scores container
+            const container = document.getElementById('playerScoresContainer');
+            container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Select a player and year to see abilities</p></div>';
+            
+            // Reset best tactic display
+            bestTacticComponent.textContent = '-';
+            bestTacticValue.textContent = '-';
+            recommendedFormation.textContent = '-';
+            tacticDescription.textContent = '-';
+            
+            // Destroy radar chart
+            if (radarChart) {
+                radarChart.destroy();
+                radarChart = null;
+            }
+        }
+        
+        function updatePlayerScores(scores) {
+            const container = document.getElementById('playerScoresContainer');
+            
+            if (!scores || Object.keys(scores).length === 0) {
+                showNoAbilitiesMessage();
+                return;
+            }
+            
+            console.log('Updating player scores:', scores);
+            
+            // Create a row layout for abilities under the player profile and radar graph
+            let abilitiesHtml = '<div class="row g-3 mt-3">';
+            
+            const abilities = ['Passing', 'Shooting', 'Creativity', 'Dribbling', 'Defense'];
+            
+            abilities.forEach((skill) => {
+                const score = scores[skill];
+                
+                // Handle missing data gracefully
+                if (score === undefined || score === null) {
+                    abilitiesHtml += `
+                        <div class="col-12 col-sm-6 col-md-12 col-lg-6">
+                            <div class="ability-card text-center p-3">
+                                <div class="ability-icon mb-2">
+                                    <i class="fas fa-${getSkillIcon(skill)} fa-2x text-muted"></i>
+                                </div>
+                                <div class="ability-label text-muted mb-1">${skill}</div>
+                                <div class="ability-value text-muted">N/A</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const numericScore = parseFloat(score) || 0;
+                const percentage = Math.min(Math.max(numericScore * 10, 0), 100); // Scale to 0-100%
+                
+                let strengthLevel = 'Low';
+                let strengthClass = 'danger';
+                let iconColor = 'text-danger';
+                if (numericScore >= 7) {
+                    strengthLevel = 'Excellent';
+                    strengthClass = 'success';
+                    iconColor = 'text-success';
+                } else if (numericScore >= 5) {
+                    strengthLevel = 'Good';
+                    strengthClass = 'primary';
+                    iconColor = 'text-primary';
+                } else if (numericScore >= 3) {
+                    strengthLevel = 'Average';
+                    strengthClass = 'warning';
+                    iconColor = 'text-warning';
+                }
+                
+                abilitiesHtml += `
+                    <div class="col-12 col-sm-6 col-md-12 col-lg-6">
+                        <div class="ability-card text-center p-3">
+                            <div class="ability-icon mb-2">
+                                <i class="fas fa-${getSkillIcon(skill)} fa-2x ${iconColor}"></i>
+                            </div>
+                            <div class="ability-label text-muted mb-1">${skill}</div>
+                            <div class="ability-value text-${strengthClass}">${Math.round(numericScore)}</div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-${strengthClass}" style="width: ${percentage}%;"></div>
+                            </div>
+                            <div class="ability-description small text-${strengthClass} mt-2">${strengthLevel}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            abilitiesHtml += '</div>';
+            
+            container.innerHTML = abilitiesHtml;
+        }
+        
+        function getSkillIcon(skill) {
+            const icons = {
+                'Passing': 'exchange-alt', 
+                'Shooting': 'bullseye',
+                'Creativity': 'lightbulb',
+                'Dribbling': 'running',
+                'Defense': 'shield-alt'
+            };
+            return icons[skill] || 'circle';
+        }
+        
+        function displayRecommendationsTable(recommendations, bestComponent) {
+            console.log('Displaying recommendations table:', recommendations);
+            
+            if (!recommendations || recommendations.length === 0) {
+                console.warn('No recommendations to display');
+                return;
+            }
+            
+            // Find the recommendations table container
+            const tableContainer = document.getElementById('recommendationsTableContainer');
+            if (!tableContainer) {
+                console.warn('Recommendations table container not found');
+                return;
+            }
+            
+            // Clear existing content
+            tableContainer.innerHTML = '';
+            
+            // Create table
+            const table = document.createElement('table');
+            table.className = 'table table-hover recommendation-table';
+            
+            // Table header
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Tactical Component</th>
+                        <th>Value</th>
+                        <th>Strength</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            
+            const tbody = table.querySelector('tbody');
+            
+            recommendations.forEach(rec => {
+                const isBest = bestComponent && rec.component === bestComponent.component;
+                const row = document.createElement('tr');
+                if (isBest) row.className = 'table-success';
+                
+                let strengthLevel = 'Low';
+                let strengthClass = 'bg-danger';
+                if (rec.value > 2) {
+                    strengthLevel = 'Very High';
+                    strengthClass = 'bg-success';
+                } else if (rec.value > 1.5) {
+                    strengthLevel = 'High';
+                    strengthClass = 'bg-primary';
+                } else if (rec.value > 1) {
+                    strengthLevel = 'Medium';
+                    strengthClass = 'bg-warning';
+                }
+                
+                row.innerHTML = `
+                    <td>
+                        <i class="fas fa-chess-board me-2"></i>
+                        ${formatTacticComponentName(rec.component)}
+                    </td>
+                    <td class="fw-bold">${rec.value.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${strengthClass}">${strengthLevel}</span>
+                    </td>
+                    <td>
+                        ${isBest ? '<span class="badge bg-success"><i class="fas fa-star me-1"></i>BEST</span>' : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            tableContainer.appendChild(table);
+        }
+
+        function updateRadarChart(bestTactic, tacticValue, abilities) {
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            // Prepare data for radar chart - use 5 core abilities
+            const labels = ['Passing', 'Shooting', 'Creativity', 'Dribbling', 'Defense'];
+            const values = labels.map(label => abilities[label] || 0);
+            
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Player Abilities',
+                        data: values,
+                        backgroundColor: 'rgba(26, 109, 204, 0.2)',
+                        borderColor: 'rgba(26, 109, 204, 1)',
+                        pointBackgroundColor: 'rgba(26, 109, 204, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(26, 109, 204, 1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.r.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 2
+                        },
+                        point: {
+                            radius: 4
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFromURL();
+        });
+        
+        function updateImpactOverTimeChart(impactData) {
+            // Destroy existing chart if it exists
+            if (impactOverTimeChart) {
+                impactOverTimeChart.destroy();
+            }
+            
+            if (!impactData || impactData.length === 0) {
+                // Create a placeholder chart
+                impactOverTimeChart = new Chart(impactOverTimeChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Impact Score Over Time',
+                            data: [],
+                            borderColor: 'rgba(26, 109, 204, 1)',
+                            backgroundColor: 'rgba(26, 109, 204, 0.2)',
+                            borderWidth: 3,
+                            pointBackgroundColor: 'rgba(26, 109, 204, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(26, 109, 204, 1)',
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Impact Score',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Date',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+                return;
+            }
+            
+            // Sort data by date chronologically
+            impactData.sort((a, b) => {
+                // Parse the month/year strings (e.g., "Jan 2022")
+                const parseDate = (dateStr) => {
+                    const parts = dateStr.split(' ');
+                    const month = parts[0];
+                    const year = parseInt(parts[1]);
+                    // Create a mapping of month abbreviations to numbers
+                    const months = {
+                        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                    };
+                    return new Date(year, months[month], 1);
+                };
+                return parseDate(a.date) - parseDate(b.date);
+            });
+            
+            // Prepare data for chart with Month Year format
+            const labels = impactData.map(item => item.date); // Already in "Month Year" format
+            const values = impactData.map(item => item.impact_score);
+            
+            // Create new chart
+            impactOverTimeChart = new Chart(impactOverTimeChartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Impact Score Over Time',
+                        data: values,
+                        borderColor: 'rgba(26, 109, 204, 1)',
+                        backgroundColor: 'rgba(26, 109, 204, 0.2)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgba(26, 109, 204, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(26, 109, 204, 1)',
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Impact Score: ${context.parsed.y.toFixed(2)}`;
+                                },
+                                title: function(context) {
+                                    return `Date: ${context[0].label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Impact Score',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Function to display global model performance
+        function displayGlobalModelPerformance(globalData) {
+            console.log('Displaying global model performance:', globalData);
+            
+            const globalDisplay = document.getElementById('globalModelPerformance');
+            const bestModelDisplay = document.getElementById('bestModelDisplay');
+            const currentModelStatus = document.getElementById('currentModelStatus');
+            const modelPerformanceTable = document.getElementById('modelPerformanceTable');
+            const modelScoresBody = document.getElementById('modelScoresBody');
+            
+            if (globalDisplay && bestModelDisplay && currentModelStatus) {
+                // Show the best model
+                bestModelDisplay.innerHTML = `
+                    <i class="fas fa-trophy me-1"></i>${globalData.best_model} 
+                    <span class="badge bg-success">${(globalData.model_scores[globalData.best_model] * 100).toFixed(1)}%</span>
+                `;
+                
+                // Show current model status
+                if (globalData.is_best_model) {
+                    currentModelStatus.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i>Using best model`;
+                } else {
+                    const currentScore = globalData.model_scores[globalData.current_model] || 0;
+                    currentModelStatus.innerHTML = `Current: ${globalData.current_model} (${(currentScore * 100).toFixed(1)}%)`;
+                }
+                
+                globalDisplay.style.display = 'block';
+            }
+            
+            // Populate model scores table
+            if (modelScoresBody && modelPerformanceTable) {
+                modelScoresBody.innerHTML = '';
+                
+                // Sort models by F1 score (descending)
+                const sortedModels = Object.entries(globalData.model_scores)
+                    .sort(([,a], [,b]) => b - a);
+                
+                sortedModels.forEach(([modelName, score]) => {
+                    const row = document.createElement('tr');
+                    const isBest = modelName === globalData.best_model;
+                    const isCurrent = modelName === globalData.current_model;
+                    
+                    let statusHtml = '';
+                    if (isBest && isCurrent) {
+                        statusHtml = '<span class="badge bg-success"><i class="fas fa-trophy me-1"></i>Best & Active</span>';
+                    } else if (isBest) {
+                        statusHtml = '<span class="badge bg-warning"><i class="fas fa-trophy me-1"></i>Best</span>';
+                    } else if (isCurrent) {
+                        statusHtml = '<span class="badge bg-primary"><i class="fas fa-play me-1"></i>Active</span>';
+                    } else {
+                        statusHtml = '<span class="badge bg-secondary">Available</span>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td class="${isBest ? 'fw-bold text-success' : ''}">
+                            ${isBest ? '<i class="fas fa-crown me-1"></i>' : ''}${modelName}
+                        </td>
+                        <td class="${isBest ? 'fw-bold text-success' : ''}">
+                            ${(score * 100).toFixed(1)}%
+                        </td>
+                        <td>${statusHtml}</td>
+                    `;
+                    
+                    modelScoresBody.appendChild(row);
+                });
+                
+                modelPerformanceTable.style.display = 'block';
+            }
+        }
+        
+        // Function to save player state to localStorage for cross-page persistence
+        function savePlayerState(playerId, year, model) {
+            const state = {
+                playerId: playerId,
+                year: year || '',
+                model: model || 'XGBoost',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('playerSelectionState', JSON.stringify(state));
+            console.log('Saved player state to localStorage:', state);
+        }
+        
+        // Initialize page on load with localStorage persistence
+        window.addEventListener('DOMContentLoaded', function() {
+            // Try to load saved state from localStorage
+            const savedState = localStorage.getItem('playerSelectionState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    console.log('Loading saved player state:', state);
+                    
+                    // Restore selections
+                    if (state.playerId && playerSelect.querySelector(`option[value="${state.playerId}"]`)) {
+                        playerSelect.value = state.playerId;
+                        analyzeBtn.disabled = false;
+                        
+                        // Load player info which will update year dropdown
+                        loadPlayerInfo(state.playerId, '').then(() => {
+                            // After year dropdown is updated, set saved year if valid
+                            if (state.year && yearSelect.querySelector(`option[value="${state.year}"]`)) {
+                                yearSelect.value = state.year;
+                                // Reload with the specific year
+                                loadPlayerInfo(state.playerId, state.year);
+                            }
+                        });
+                        
+                        if (state.model && modelSelect.querySelector(`option[value="${state.model}"]`)) {
+                            modelSelect.value = state.model;
+                        }
+                        
+                        // Update navigation buttons
+                        updateNavigationButtons(state.playerId, state.year, state.model);
+                    }
+                } catch (e) {
+                    console.warn('Error parsing saved player state:', e);
+                    localStorage.removeItem('playerSelectionState');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
